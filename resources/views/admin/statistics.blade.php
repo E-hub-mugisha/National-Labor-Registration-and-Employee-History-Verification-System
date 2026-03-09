@@ -125,7 +125,6 @@
 
 </div>
 
-@push('scripts')
 <script>
     // Employment by Status Chart
     new Chart(document.getElementById('statusChart'), {
@@ -192,6 +191,5 @@
         }
     });
 </script>
-@endpush
 
 @endsection
