@@ -4,7 +4,7 @@
 @section('content')
 
 {{-- Hero Section --}}
-<div class="py-5 text-center" style="background:linear-gradient(135deg,#1B3A6B,#2E6DB4);border-radius:16px;color:#fff;margin-bottom:2rem;">
+<div class="py-5 text-center" style="background:linear-gradient(135deg,#1B3A6B,#2E6DB4);border-radius:16px;color:#fff;margin-bottom:2rem; margin-top:2rem;">
     <div class="py-4">
         <div class="mb-3">
             <i class="bi bi-shield-check" style="font-size:4rem;color:#4CAF50;"></i>
