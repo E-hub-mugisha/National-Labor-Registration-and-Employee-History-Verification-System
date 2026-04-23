@@ -9,8 +9,8 @@
         <div class="mb-3">
             <i class="bi bi-shield-check" style="font-size:4rem;color:#4CAF50;"></i>
         </div>
-        <h1 class="fw-bold mb-2">National Labor Registration &</h1>
-        <h1 class="fw-bold mb-3">Employee History Verification System</h1>
+        <h1 class="fw-bold mb-2">NATIONAL FORMAL EMPLOYMENT REGISTRATION &</h1>
+        <h1 class="fw-bold mb-3">EMPLOYEE HISTORY VERIFICATION SYSTEM</h1>
         <p class="lead mb-4" style="color:rgba(255,255,255,.8);max-width:600px;margin:0 auto;">
             A secure, government-backed platform for transparent employment
             verification and labor market accountability in Rwanda.
