@@ -16,23 +16,28 @@ Route::get('/', function () {
 // ── Authentication Routes ────────────────────────────────────
 Auth::routes(['verify' => true]);
 
-// ── Employee Routes ──────────────────────────────────────────
-Route::prefix('employee')->name('employee.')->middleware(['auth'])->group(function () {
-
-    Route::get('/dashboard',         [EmployeeController::class, 'dashboard'])->name('dashboard');
-    Route::get('/register',          [EmployeeController::class, 'create'])->name('register');
-    Route::post('/register',         [EmployeeController::class, 'store'])->name('store');
-    Route::get('/profile/edit',      [EmployeeController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile',           [EmployeeController::class, 'update'])->name('profile.update');
-    Route::post('/skills',           [EmployeeController::class, 'addSkill'])->name('skills.store');
-    Route::delete('/skills/{skill}', [EmployeeController::class, 'deleteSkill'])->name('skills.destroy');
-    Route::post('/qualifications',   [EmployeeController::class, 'addQualification'])->name('qualifications.store');
-    Route::patch('/toggle-searchable', [EmployeeController::class, 'toggleSearchable'])->name('toggle-searchable');
-    Route::get('/profile', [EmployeeController::class, 'profile'])->name('profile');
-
-    // Feedback response
-    Route::get('/feedback',                          [FeedbackController::class, 'index'])->name('feedback.index');
-    Route::post('/feedback/{feedback}/respond',      [FeedbackController::class, 'respond'])->name('feedback.respond');
+Route::middleware(['auth', 'verified'])->prefix('employees')->name('employees.')->group(function () {
+ 
+    // Listing — /employees
+    Route::get('/', [EmployeeController::class, 'index'])->name('index');
+ 
+    // Search — /employees/search
+    Route::get('/search', [EmployeeController::class, 'search'])->name('search');
+ 
+    // Register new employee — /employees/create + /employees
+    Route::get('/create', [EmployeeController::class, 'create'])->name('create');
+    Route::post('/', [EmployeeController::class, 'store'])->name('store');
+ 
+    // Profile — /employees/{employee}
+    Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');
+ 
+    // Exit (end employment) — /employees/{employee}/exit
+    Route::get('/{employee}/exit', [EmployeeController::class, 'exitForm'])->name('exit');
+    Route::post('/{employee}/exit', [EmployeeController::class, 'recordExit'])->name('recordExit');
+ 
+    // Transfer request — /employees/{employee}/transfer
+    Route::post('/{employee}/transfer', [EmployeeController::class, 'requestTransfer'])->name('transfer');
+ 
 });
 
 // ── Employer Routes ──────────────────────────────────────────

@@ -108,7 +108,7 @@
                     <div class="small opacity-75">Registered Employees</div>
                 </div>
                 <div class="col-md-3 border-end border-light border-opacity-25">
-                    <div class="fs-2 fw-bold">{{ \App\Models\Employer::where('verification_status','verified')->count() }}</div>
+                    <div class="fs-2 fw-bold">{{ \App\Models\Employer::where('status','verified')->count() }}</div>
                     <div class="small opacity-75">Verified Employers</div>
                 </div>
                 <div class="col-md-3 border-end border-light border-opacity-25">
@@ -116,7 +116,7 @@
                     <div class="small opacity-75">Employment Records</div>
                 </div>
                 <div class="col-md-3">
-                    <div class="fs-2 fw-bold">{{ \App\Models\VerificationRequest::count() }}</div>
+                    <div class="fs-2 fw-bold">{{ \App\Models\TransferRequest::count() }}</div>
                     <div class="small opacity-75">Verifications Done</div>
                 </div>
             </div>

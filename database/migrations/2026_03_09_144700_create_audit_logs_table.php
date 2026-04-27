@@ -13,16 +13,17 @@ return new class extends Migration
     {
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->string('action', 100);
-            $table->string('model_type', 100)->nullable();
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('action');                        // 'employee.registered', 'transfer.approved', etc.
+            $table->string('model_type')->nullable();
             $table->unsignedBigInteger('model_id')->nullable();
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();
-            $table->string('ip_address', 45)->nullable();
+            $table->string('ip_address')->nullable();
             $table->string('user_agent')->nullable();
-            $table->text('description')->nullable();
             $table->timestamps();
+ 
+            $table->index(['model_type', 'model_id']);
         });
     }
 

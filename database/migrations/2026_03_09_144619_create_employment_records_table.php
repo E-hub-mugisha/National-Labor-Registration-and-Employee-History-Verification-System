@@ -14,55 +14,22 @@ return new class extends Migration
         Schema::create('employment_records', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->foreignId('employer_id')->nullable()->constrained('employers')->onDelete('set null');
-            $table->string('job_title', 150);
-            $table->string('department', 100)->nullable();
-            $table->enum('employment_type', [
-                'full_time',
-                'part_time',
-                'contract',
-                'internship',
-                'volunteer',
-                'attachment'
-            ]);
-            $table->decimal('salary_start', 12, 2)->nullable();
-            $table->decimal('salary_end', 12, 2)->nullable();
-            $table->string('salary_currency', 10)->default('RWF');
-            $table->text('job_description')->nullable();
+            $table->foreignId('employer_id')->constrained('employers')->onDelete('cascade');
+            $table->string('position');                      // Job title/role
+            $table->string('department')->nullable();
+            $table->decimal('salary', 12, 2)->nullable();   // Optional
             $table->date('start_date');
-            $table->date('end_date')->nullable();
-            $table->boolean('is_current')->default(false);
+            $table->date('end_date')->nullable();            // null = currently employed
             $table->enum('exit_reason', [
-                'resignation',
-                'contract_expiry',
-                'mutual_agreement',
-                'redundancy',
-                'dismissal_misconduct',
-                'dismissal_performance',
-                'medical_grounds',
-                'retirement',
-                'death',
-                'other'
+                'resigned', 'terminated', 'contract_ended', 'transferred',
+                'retired', 'deceased', 'redundancy', 'mutual_agreement', 'other'
             ])->nullable();
-            $table->text('exit_details')->nullable();
-            $table->string('exit_reference_number', 100)->nullable();
-            $table->enum('record_source', [
-                'employer_reported',
-                'employee_self_reported',
-                'government_imported'
-            ])->default('employee_self_reported');
-            $table->boolean('employer_verified')->default(false);
-            $table->timestamp('employer_verified_at')->nullable();
-            $table->boolean('employee_confirmed')->default(false);
-            $table->timestamp('employee_confirmed_at')->nullable();
-            $table->boolean('under_dispute')->default(false);
-            $table->text('employee_dispute_note')->nullable();
-            $table->enum('dispute_status', [
-                'none',
-                'open',
-                'under_review',
-                'resolved'
-            ])->default('none');
+            $table->text('exit_details')->nullable();        // Additional exit explanation
+            $table->enum('conduct_rating', ['excellent', 'good', 'satisfactory', 'poor', 'very_poor'])->nullable();
+            $table->text('conduct_remarks')->nullable();     // Employer's professional conduct remarks
+            $table->boolean('eligible_for_rehire')->nullable();
+            $table->enum('status', ['active', 'closed', 'disputed'])->default('active');
+            $table->foreignId('recorded_by')->constrained('users'); // which employer user recorded this
             $table->timestamps();
             $table->softDeletes();
         });

@@ -4,74 +4,56 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'user_type',
-        'is_active'
+        'role',
+        'is_active',
+        'avatar',
+        'last_login_at',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
+    protected $hidden = ['password', 'remember_token'];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'last_login_at'     => 'datetime',
+        'password'          => 'hashed',
+        'is_active'         => 'boolean',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    // ── Role helpers ──────────────────────────────────────────────────────────
+    public function isEmployee(): bool
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->role === 'employee';
+    }
+    public function isEmployer(): bool
+    {
+        return $this->role === 'employer';
+    }
+    public function isGovernment(): bool
+    {
+        return $this->role === 'government';
     }
 
-    public function employer()
-    {
-        return $this->hasOne(Employer::class);
-    }
-
+    // ── Relationships ─────────────────────────────────────────────────────────
     public function employee()
     {
         return $this->hasOne(Employee::class);
     }
 
-    // ── Helpers ──
-
-    public function isAdmin(): bool
+    public function employer()
     {
-        return $this->user_type === 'admin';
-    }
-
-    public function isEmployer(): bool
-    {
-        return $this->user_type === 'employer';
-    }
-
-    public function isEmployee(): bool
-    {
-        return $this->user_type === 'employee';
+        return $this->hasOne(Employer::class);
     }
 }

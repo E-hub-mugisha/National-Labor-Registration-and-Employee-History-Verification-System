@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employer extends Model
 {
@@ -14,118 +12,111 @@ class Employer extends Model
 
     protected $fillable = [
         'user_id',
-        'rdb_number',
-        'company_name',
-        'trading_name',
-        'business_type',
-        'industry_sector',
-        'company_description',
+        'name',
+        'tin_number',
+        'registration_number',
+        'sector',
+        'address',
+        'district',
+        'province',
+        'phone',
+        'email',
         'website',
-        'headquarters_province',
-        'headquarters_district',
-        'headquarters_address',
-        'contact_phone',
-        'contact_email',
-        'hr_contact_name',
-        'hr_contact_phone',
-        'hr_contact_email',
-        'verification_status',
-        'verified_at',
-        'verified_by',
-        'rdb_verification_ref',
+        'logo',
+        'status',
         'rejection_reason',
-        'subscription_tier',
-        'monthly_search_quota',
-        'searches_used_this_month',
-        'quota_reset_date',
-        'company_logo',
-        'is_active',
+        'verified_by',
+        'verified_at',
+        'description',
     ];
 
     protected $casts = [
-        'verified_at'      => 'datetime',
-        'quota_reset_date' => 'date',
-        'is_active'        => 'boolean',
+        'verified_at' => 'datetime',
     ];
 
-    // ── Relationships ────────────────────────────────────────
+    // ── Scopes ─────────────────────────────────────────────────────────────────
+    public function scopeVerified($q)
+    {
+        return $q->where('status', 'verified');
+    }
+    public function scopePending($q)
+    {
+        return $q->where('status', 'pending');
+    }
 
-    public function user(): BelongsTo
+    // ── Status helpers ─────────────────────────────────────────────────────────
+    public function isVerified(): bool
+    {
+        return $this->status === 'verified';
+    }
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
+    public function getStatusBadgeAttribute(): string
+    {
+        return match ($this->status) {
+            'verified'  => 'bg-emerald-100 text-emerald-800',
+            'pending'   => 'bg-amber-100 text-amber-800',
+            'suspended' => 'bg-red-100 text-red-800',
+            'rejected'  => 'bg-gray-100 text-gray-800',
+            default     => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    // ── Relationships ──────────────────────────────────────────────────────────
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function verifiedBy(): BelongsTo
+    public function currentEmployees()
     {
-        return $this->belongsTo(User::class, 'verified_by');
+        return $this->hasMany(Employee::class, 'current_employer_id');
     }
 
-    public function employmentRecords(): HasMany
+    public function employmentRecords()
     {
         return $this->hasMany(EmploymentRecord::class);
     }
 
-    public function activeEmployees(): HasMany
+    public function activeEmploymentRecords()
     {
-        return $this->hasMany(EmploymentRecord::class)
-                    ->where('is_current', true);
+        return $this->employmentRecords()->whereNull('end_date');
     }
 
-    public function feedback(): HasMany
+    public function transferRequestsReceived()
     {
-        return $this->hasMany(ProfessionalFeedback::class);
+        return $this->hasMany(TransferRequest::class, 'current_employer_id');
     }
 
-    public function verificationRequests(): HasMany
+    public function transferRequestsSent()
     {
-        return $this->hasMany(VerificationRequest::class);
+        return $this->hasMany(TransferRequest::class, 'requesting_employer_id');
     }
 
-    // ── Accessors ────────────────────────────────────────────
-
-    public function getDisplayNameAttribute(): string
+    // ── Accessors ──────────────────────────────────────────────────────────────
+    public function getSectorLabelAttribute(): string
     {
-        return $this->trading_name ?? $this->company_name;
-    }
-
-    public function getIsVerifiedAttribute(): bool
-    {
-        return $this->verification_status === 'verified';
-    }
-
-    public function getRemainingSearchQuotaAttribute(): int
-    {
-        return max(0, $this->monthly_search_quota - $this->searches_used_this_month);
-    }
-
-    // ── Scopes ───────────────────────────────────────────────
-
-    public function scopeVerified($query)
-    {
-        return $query->where('verification_status', 'verified')
-                     ->where('is_active', true);
-    }
-
-    public function scopePending($query)
-    {
-        return $query->where('verification_status', 'pending');
-    }
-
-    // ── Methods ──────────────────────────────────────────────
-
-    public function canSearch(): bool
-    {
-        return $this->is_verified
-            && $this->remaining_search_quota > 0;
-    }
-
-    public function incrementSearchCount(): void
-    {
-        if ($this->quota_reset_date && now()->gt($this->quota_reset_date)) {
-            $this->searches_used_this_month = 0;
-            $this->quota_reset_date = now()->addMonth()->startOfMonth();
-            $this->save();
-        }
-        $this->increment('searches_used_this_month');
+        return match ($this->sector) {
+            'public_administration' => 'Public Administration',
+            'banking_finance'       => 'Banking & Finance',
+            'hospitality_tourism'   => 'Hospitality & Tourism',
+            'bpo_call_center'       => 'BPO / Call Center',
+            'healthcare'            => 'Healthcare',
+            'education'             => 'Education',
+            'manufacturing'         => 'Manufacturing',
+            'construction'          => 'Construction',
+            'agriculture'           => 'Agriculture',
+            'ngo'                   => 'NGO / Non-Profit',
+            'technology'            => 'Technology',
+            'retail'                => 'Retail',
+            default                 => 'Other',
+        };
     }
 }

@@ -20,115 +20,96 @@ class Employee extends Model
         'middle_name',
         'date_of_birth',
         'gender',
-        'nationality',
-        'province',
-        'district',
-        'sector',
-        'phone_primary',
-        'phone_secondary',
+        'phone',
         'email',
-        'address',
-        'current_job_title',
-        'employment_status',
-        'professional_summary',
-        'languages',
-        'nida_verified',
-        'nida_verified_at',
-        'nida_verification_ref',
-        'profile_complete',
-        'is_searchable',
+        'district',
+        'province',
+        'photo',
+        'current_employer_id',
+        'status',
+        'skills',
+        'highest_qualification',
     ];
 
     protected $casts = [
-        'date_of_birth'     => 'date',
-        'nida_verified'     => 'boolean',
-        'nida_verified_at'  => 'datetime',
-        'profile_complete'  => 'boolean',
-        'is_searchable'     => 'boolean',
-        'languages'         => 'array',
+        'date_of_birth' => 'date',
     ];
 
-    // ── Relationships ────────────────────────────────────────
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function skills(): HasMany
-    {
-        return $this->hasMany(EmployeeSkill::class);
-    }
-
-    public function qualifications(): HasMany
-    {
-        return $this->hasMany(EmployeeQualification::class)
-                    ->orderByDesc('end_date');
-    }
-
-    public function employmentRecords(): HasMany
-    {
-        return $this->hasMany(EmploymentRecord::class)
-                    ->orderByDesc('start_date');
-    }
-
-    public function currentEmployment(): HasMany
-    {
-        return $this->hasMany(EmploymentRecord::class)
-                    ->where('is_current', true);
-    }
-
-    public function feedback(): HasMany
-    {
-        return $this->hasMany(ProfessionalFeedback::class)
-                    ->where('is_published', true)
-                    ->where('moderation_status', 'approved');
-    }
-
-    public function verificationRequests(): HasMany
-    {
-        return $this->hasMany(VerificationRequest::class);
-    }
-
-    // ── Accessors ────────────────────────────────────────────
-
+    // ── Accessors ──────────────────────────────────────────────────────────────
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
 
-    public function getMaskedNationalIdAttribute(): string
+    public function getAgeAttribute(): int
     {
-        return substr($this->national_id, 0, 4)
-            . str_repeat('*', strlen($this->national_id) - 7)
-            . substr($this->national_id, -3);
+        return $this->date_of_birth->age;
     }
 
-    public function getAverageRatingAttribute(): ?float
+    public function getStatusBadgeAttribute(): string
     {
-        $avg = $this->feedback()->avg('rating_overall');
-        return $avg ? round($avg, 1) : null;
+        return match ($this->status) {
+            'active'      => 'bg-emerald-100 text-emerald-800',
+            'unemployed'  => 'bg-gray-100 text-gray-800',
+            'blacklisted' => 'bg-red-100 text-red-800',
+            default       => 'bg-gray-100 text-gray-800',
+        };
     }
 
-    public function getTotalExperienceYearsAttribute(): float
+    // ── Scopes ─────────────────────────────────────────────────────────────────
+    public function scopeActive($q)
     {
-        return $this->employmentRecords
-            ->sum(function ($record) {
-                $end = $record->end_date ?? now();
-                return $record->start_date->diffInMonths($end) / 12;
-            });
+        return $q->where('status', 'active');
+    }
+    public function scopeUnemployed($q)
+    {
+        return $q->where('status', 'unemployed');
     }
 
-    // ── Scopes ───────────────────────────────────────────────
-
-    public function scopeVerified($query)
+    // ── Relationships ──────────────────────────────────────────────────────────
+    public function user()
     {
-        return $query->where('nida_verified', true);
+        return $this->belongsTo(User::class);
     }
 
-    public function scopeSearchable($query)
+    public function currentEmployer()
     {
-        return $query->where('is_searchable', true)
-                     ->where('profile_complete', true);
+        return $this->belongsTo(Employer::class, 'current_employer_id');
+    }
+
+    public function employmentRecords()
+    {
+        return $this->hasMany(EmploymentRecord::class)->orderBy('start_date', 'desc');
+    }
+
+    public function activeEmploymentRecord()
+    {
+        return $this->hasOne(EmploymentRecord::class)->whereNull('end_date')->latest('start_date');
+    }
+
+    public function claims()
+    {
+        return $this->hasMany(Claim::class);
+    }
+
+    public function transferRequests()
+    {
+        return $this->hasMany(TransferRequest::class);
+    }
+
+    public function pendingTransferRequest()
+    {
+        return $this->hasOne(TransferRequest::class)->where('status', 'pending')->latest();
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    public function isCurrentlyEmployedAt(Employer $employer): bool
+    {
+        return $this->current_employer_id === $employer->id;
+    }
+
+    public function hasPendingTransfer(): bool
+    {
+        return $this->transferRequests()->where('status', 'pending')->exists();
     }
 }

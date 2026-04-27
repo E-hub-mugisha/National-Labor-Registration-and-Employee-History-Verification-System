@@ -66,41 +66,40 @@ class EmployerController extends Controller
     }
 
     // Store new employer
-    public function store(StoreEmployerRequest $request)
+    public function store(Request $request)
     {
-        DB::beginTransaction();
-        try {
-            $employer = Employer::create([
-                ...$request->validated(),
-                'user_id'              => Auth::id(),
-                'verification_status'  => 'pending',
-                'monthly_search_quota' => 50,
-                'quota_reset_date'     => now()->addMonth()->startOfMonth(),
-            ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'tin_number' => 'nullable|string|max:100',
+            'registration_number' => 'nullable|string|max:100',
+            'sector' => 'nullable|string',
+            'address' => 'nullable|string',
+            'district' => 'nullable|string|max:100',
+            'province' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'required|email|max:255',
+            'website' => 'nullable|url|max:255',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-            if ($request->hasFile('company_logo')) {
-                $employer->update([
-                    'company_logo' => $request->file('company_logo')
-                        ->store("logos/{$employer->id}", 'public'),
-                ]);
-            }
-
-            DB::commit();
-
-            AuditLog::record(
-                'created',
-                'Employer profile created',
-                $employer
-            );
-
-            return redirect()->route('employer.pending')
-                ->with('success', 'Registration submitted. Awaiting verification.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Employer registration failed: ' . $e->getMessage());
-            return back()->withInput()
-                ->with('error', 'Registration failed. Please try again.');
+        // Upload logo if exists
+        if ($request->hasFile('logo')) {
+            $validated['logo'] = $request->file('logo')->store('employer-logos', 'public');
         }
+
+        // Auto-fill user_id
+        $validated['user_id'] = Auth::id();
+
+        // Default status
+        $validated['status'] = 'pending';
+
+        // Create employer
+        $employer = Employer::create($validated);
+
+        return redirect()
+            ->route('dashboard')
+            ->with('success', 'Employer registered successfully. Awaiting verification.');
     }
 
     // Report new employee hire

@@ -7,193 +7,268 @@ use App\Models\EmployeeSkill;
 use App\Models\EmployeeQualification;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
+use App\Mail\EmployeeAccountCreated;
 use App\Models\AuditLog;
+use App\Models\EmploymentRecord;
+use App\Models\TransferRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
-    public static function middleware(): array
+    /**
+     * Search for an employee by National ID.
+     * Returns search form + result.
+     */
+    public function search(Request $request)
     {
-        return [
-            new Middleware('auth'),
-        ];
-    }
+        $employer = auth()->user()->employer;
 
-    // Show employee dashboard
-    public function dashboard()
-    {
-        $employee = Auth::user()->employee;
+        abort_if(!$employer || !$employer->isVerified(), 403, 'Your employer must be verified to use this feature.');
 
-        if (! $employee) {
-            return redirect()->route('employee.register');
+        $employee = null;
+        $searched = false;
+
+        if ($request->filled('national_id')) {
+            $searched = true;
+            $employee = Employee::with([
+                'currentEmployer',
+                'employmentRecords.employer',
+                'pendingTransferRequest',
+            ])->where('national_id', $request->national_id)->first();
         }
 
-        $employee->load([
-            'employmentRecords.employer',
-            'employmentRecords.feedback',
-            'skills',
-            'qualifications',
-        ]);
-
-        $stats = [
-            'total_experience' => round($employee->total_experience_years, 1),
-            'total_employers'  => $employee->employmentRecords->count(),
-            'verified_records' => $employee->employmentRecords
-                ->where('employer_verified', true)
-                ->count(),
-            'avg_rating'       => $employee->average_rating,
-            'profile_views'    => $employee->verificationRequests->count(),
-        ];
-
-        return view('employees.dashboard', compact('employee', 'stats'));
+        return view('employees.search', compact('employee', 'searched', 'employer'));
     }
 
-    // Show registration form
+    /**
+     * Show form to register a brand new employee.
+     */
     public function create()
     {
-        if (Auth::user()->employee) {
-            return redirect()->route('employee.dashboard')
-                ->with('info', 'Profile already created.');
-        }
+        $employer = auth()->user()->employer;
+        abort_if(!$employer->isVerified(), 403);
 
-        return view('employees.register');
+        return view('employees.create', compact('employer'));
     }
 
-    // Store new employee profile
-    public function store(StoreEmployeeRequest $request)
+    /**
+     * Store a new employee and create their user account + first employment record.
+     */
+    public function store(Request $request)
     {
-        DB::beginTransaction();
-        try {
-            $employee = Employee::create([
-                ...$request->validated(),
-                'user_id'          => Auth::id(),
-                'nida_verified'    => false,
-                'profile_complete' => false,
+        $employer = auth()->user()->employer;
+
+
+        $data = $request->validate([
+            'national_id' => 'required',
+            'first_name'  => 'required|string|max:100',
+            'last_name'   => 'required|string|max:100',
+            'middle_name' => 'nullable|string|max:100',
+            'date_of_birth' => 'required|date|before:today',
+            'gender'      => 'required|in:male,female,other',
+            'phone'       => 'nullable|string|max:20',
+            'email'       => 'required',
+            'district'    => 'nullable|string|max:100',
+            'province'    => 'nullable|string|max:100',
+            'photo'       => 'nullable|image|max:2048',
+            'skills'      => 'nullable|string',
+            'highest_qualification' => 'nullable|string|max:200',
+
+            'position'    => 'required|string|max:200',
+            'department'  => 'nullable|string|max:200',
+            'start_date'  => 'required|date',
+        ]);
+
+        DB::transaction(function () use ($request, $data, $employer, &$employee, &$user) {
+
+            $tempPassword = Str::random(10);
+
+            // 1. Create user
+            $user = User::create([
+                'name' => trim($data['first_name'] . ' ' . $data['last_name']),
+                'email' => $data['email'],
+                'password' => Hash::make($tempPassword),
+                'role' => 'employee',
             ]);
 
-            DB::commit();
+            // 2. Upload photo
+            $photoPath = $request->hasFile('photo')
+                ? $request->file('photo')->store('employees/photos', 'public')
+                : null;
 
-            AuditLog::record(
-                'created',
-                'Employee profile created',
-                $employee
-            );
+            // 3. Create employee
+            $employee = Employee::create([
+                'user_id' => $user->id,
+                'national_id' => $data['national_id'],
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'middle_name' => $data['middle_name'] ?? null,
+                'date_of_birth' => $data['date_of_birth'],
+                'gender' => $data['gender'],
+                'phone' => $data['phone'] ?? null,
+                'email' => $data['email'],
+                'district' => $data['district'] ?? null,
+                'province' => $data['province'] ?? null,
+                'photo' => $photoPath,
+                'current_employer_id' => $employer->id,
+                'status' => 'active',
+                'skills' => $data['skills'] ?? null,
+                'highest_qualification' => $data['highest_qualification'] ?? null,
+            ]);
 
-            return redirect()->route('employee.profile.edit', $employee)
-                ->with('success', 'Profile created successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Employee registration failed: ' . $e->getMessage());
-            return back()->withInput()
-                ->with('error', 'Registration failed. Please try again.');
-        }
+            // 4. Employment record
+            \App\Models\EmploymentRecord::create([
+                'employee_id' => $employee->id,
+                'employer_id' => $employer->id,
+                'position' => $data['position'],
+                'department' => $data['department'] ?? null,
+                'start_date' => $data['start_date'],
+                'status' => 'active',
+                'recorded_by' => auth()->id(),
+            ]);
+
+            // TODO: send email (recommended via queue)
+        });
+        return redirect()->route('employees.search')
+            ->with('success', 'Employee registered successfully. Login credentials sent to their email.');
     }
 
-    // Show edit profile form
-    public function edit()
+    /**
+     * View a specific employee's full profile and history (for this employer).
+     */
+    public function show(Employee $employee)
     {
-        $employee = Auth::user()->employee;
+        $employer = auth()->user()->employer;
+        abort_if(!$employer->isVerified(), 403);
 
-        if (! $employee) {
-            return redirect()->route('employee.register');
-        }
-
-        $employee->load(['skills', 'qualifications', 'employmentRecords']);
-
-        return view('employees.edit', compact('employee'));
-    }
-
-    // Update employee profile
-    public function update(UpdateEmployeeRequest $request)
-    {
-        $employee = Auth::user()->employee;
-
-        $employee->update($request->validated());
-        $employee->update([
-            'profile_complete' => $this->checkProfileComplete($employee)
+        $employee->load([
+            'currentemployer',
+            'employmentRecords.employer',
+            'claims.employmentRecord',
         ]);
 
-        return back()->with('success', 'Profile updated successfully.');
+        $ownRecord = $employee->employmentRecords->firstWhere('employer_id', $employer->id);
+
+        return view('employees.show', compact('employee', 'employer', 'ownRecord'));
     }
 
-    // Add a skill
-    public function addSkill(Request $request)
+    /**
+     * Show form to close/end an employment record (exit).
+     */
+    public function exitForm(Employee $employee)
     {
-        $employee = Auth::user()->employee;
+        $employer = auth()->user()->employer;
+        $record  = EmploymentRecord::where('employee_id', $employee->id)
+            ->where('employer_id', $employer->id)
+            ->whereNull('end_date')
+            ->firstOrFail();
 
-        $validated = $request->validate([
-            'skill_name'          => 'required|string|max:100',
-            'proficiency_level'   => 'required|in:beginner,intermediate,advanced,expert',
-            'years_of_experience' => 'required|integer|min:0|max:50',
+        return view('employees.exit', compact('employee', 'record', 'employer'));
+    }
+
+    /**
+     * Record exit — close the employment record.
+     */
+    public function recordExit(Request $request, Employee $employee)
+    {
+        $employer = auth()->user()->employer;
+
+        $record = EmploymentRecord::where('employee_id', $employee->id)
+            ->where('employer_id', $employer->id)
+            ->whereNull('end_date')
+            ->firstOrFail();
+
+        $data = $request->validate([
+            'end_date'            => 'required|date|after_or_equal:' . $record->start_date,
+            'exit_reason'         => 'required|in:resigned,terminated,contract_ended,transferred,retired,deceased,redundancy,mutual_agreement,other',
+            'exit_details'        => 'nullable|string|max:1000',
+            'conduct_rating'      => 'required|in:excellent,good,satisfactory,poor,very_poor',
+            'conduct_remarks'     => 'nullable|string|max:2000',
+            'eligible_for_rehire' => 'required|boolean',
         ]);
 
-        $employee->skills()->create($validated);
+        DB::transaction(function () use ($data, $record, $employee, $employer) {
+            $record->update([
+                'end_date'            => $data['end_date'],
+                'exit_reason'         => $data['exit_reason'],
+                'exit_details'        => $data['exit_details'] ?? null,
+                'conduct_rating'      => $data['conduct_rating'],
+                'conduct_remarks'     => $data['conduct_remarks'] ?? null,
+                'eligible_for_rehire' => $data['eligible_for_rehire'],
+                'status'              => 'closed',
+            ]);
 
-        return back()->with('success', 'Skill added successfully.');
+            // Update employee status
+            $employee->update([
+                'current_employer_id' => null,
+                'status'             => 'unemployed',
+            ]);
+        });
+
+        return redirect()->route('employees.search')
+            ->with('success', 'Employment exit recorded successfully.');
     }
 
-    // Delete a skill
-    public function deleteSkill(EmployeeSkill $skill)
+    /**
+     * Request transfer of an employee from their current employer.
+     */
+    public function requestTransfer(Request $request, Employee $employee)
     {
-        $skill->delete();
-        return back()->with('success', 'Skill removed.');
-    }
+        $employer = auth()->user()->employer;
+        abort_if(!$employer->isVerified(), 403);
 
-    // Add a qualification
-    public function addQualification(Request $request)
-    {
-        $employee = Auth::user()->employee;
+        // Prevent duplicate pending requests
+        abort_if($employee->hasPendingTransfer(), 422, 'A transfer request is already pending for this employee.');
 
-        $validated = $request->validate([
-            'type'                 => 'required|in:academic,professional,vocational,certification,other',
-            'institution_name'     => 'required|string|max:200',
-            'qualification_title'  => 'required|string|max:200',
-            'field_of_study'       => 'nullable|string|max:100',
-            'start_date'           => 'nullable|date',
-            'end_date'             => 'nullable|date|after_or_equal:start_date',
-            'is_current'           => 'boolean',
-            'certificate_number'   => 'nullable|string|max:100',
+        $data = $request->validate([
+            'requested_position' => 'required|string|max:200',
+            'message'            => 'nullable|string|max:1000',
         ]);
 
-        $employee->qualifications()->create($validated);
+        $transfer = TransferRequest::create([
+            'employee_id'           => $employee->id,
+            'requesting_employer_id' => $employer->id,
+            'current_employer_id'    => $employee->current_employer_id,
+            'requested_position'    => $data['requested_position'],
+            'message'               => $data['message'] ?? null,
+            'status'                => 'pending',
+            'requested_by'          => auth()->id(),
+        ]);
 
-        return back()->with('success', 'Qualification added successfully.');
+        // Notify current employer
+        $employee->currentemployer->user->notify(new TransferRequested($transfer));
+
+        return back()->with('success', 'Transfer request sent to the current employer. You will be notified when they respond.');
     }
 
-    // Toggle profile visibility
-    public function toggleSearchable()
+    /**
+     * List all employees currently assigned to this 
+     */
+    public function index()
     {
-        $employee = Auth::user()->employee;
-        $employee->update(['is_searchable' => ! $employee->is_searchable]);
+        $employer   = auth()->user()->employer;
 
-        $status = $employee->is_searchable ? 'visible' : 'hidden';
-
-        return back()->with('success', "Your profile is now {$status} in search results.");
-    }
-
-    // Check if profile is complete
-    private function checkProfileComplete(Employee $employee): bool
-    {
-        return filled($employee->first_name)
-            && filled($employee->last_name)
-            && filled($employee->national_id)
-            && filled($employee->phone_primary)
-            && filled($employee->employment_status)
-            && $employee->skills()->exists();
-    }
-
-    public function profile()
-    {
-        $employee = Auth::user()->employee;
-
-        if (!$employee) {
-            return redirect()->route('employee.register');
+        if (!$employer) {
+            return redirect()->route('employer.register');
         }
 
-        return view('employees.profile', compact('employee'));
+        if ($employer->verification_status === 'pending') {
+            return redirect()->route('employer.pending');
+        }
+
+        $employees = Employee::with('employmentRecords')
+            ->where('current_employer_id', $employer->id)
+            ->latest()
+            ->paginate(20);
+
+        return view('employees.index', compact('employees', 'employer'));
     }
 }

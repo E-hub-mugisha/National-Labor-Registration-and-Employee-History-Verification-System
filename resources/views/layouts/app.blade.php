@@ -192,7 +192,7 @@
             <span class="text-white-50 small d-none d-md-inline">
                 {{ Auth::user()->name }}
                 <span class="badge bg-secondary ms-1">
-                    {{ Auth::user()->user_type }}
+                    {{ Auth::user()->role }}
                 </span>
             </span>
             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -215,7 +215,7 @@
         @auth
         <nav class="sidebar pt-3">
 
-            @if(Auth::user()->user_type === 'employee')
+            @if(Auth::user()->role === 'employee')
             <div class="nav-section">Employee</div>
             <a href="{{ route('employee.dashboard') }}"
                 class="nav-link {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
@@ -231,7 +231,7 @@
                 <i class="bi bi-star me-2"></i>My Feedback
             </a>
 
-            @elseif(Auth::user()->user_type === 'employer')
+            @elseif(Auth::user()->role === 'employer')
             <div class="nav-section">Employer</div>
             <a href="{{ route('employer.dashboard') }}"
                 class="nav-link {{ request()->routeIs('employer.dashboard') ? 'active' : '' }}">
@@ -248,7 +248,7 @@
                 <i class="bi bi-search me-2"></i>Search Employee
             </a>
 
-            @elseif(in_array(Auth::user()->user_type, ['admin', 'government']))
+            @elseif(in_array(Auth::user()->role, ['admin', 'government']))
             <div class="nav-section">Administration</div>
             <a href="{{ route('admin.dashboard') }}"
                 class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">

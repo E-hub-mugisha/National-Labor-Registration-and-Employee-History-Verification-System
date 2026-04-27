@@ -15,104 +15,89 @@ class EmploymentRecord extends Model
     protected $fillable = [
         'employee_id',
         'employer_id',
-        'job_title',
+        'position',
         'department',
-        'employment_type',
-        'salary_start',
-        'salary_end',
-        'salary_currency',
-        'job_description',
+        'salary',
         'start_date',
         'end_date',
-        'is_current',
         'exit_reason',
         'exit_details',
-        'exit_reference_number',
-        'record_source',
-        'employer_verified',
-        'employer_verified_at',
-        'employee_confirmed',
-        'employee_confirmed_at',
-        'under_dispute',
-        'employee_dispute_note',
-        'dispute_status',
+        'conduct_rating',
+        'conduct_remarks',
+        'eligible_for_rehire',
+        'status',
+        'recorded_by',
     ];
 
     protected $casts = [
-        'start_date'            => 'date',
-        'end_date'              => 'date',
-        'is_current'            => 'boolean',
-        'employer_verified'     => 'boolean',
-        'employer_verified_at'  => 'datetime',
-        'employee_confirmed'    => 'boolean',
-        'employee_confirmed_at' => 'datetime',
-        'under_dispute'         => 'boolean',
+        'start_date'          => 'date',
+        'end_date'            => 'date',
+        'eligible_for_rehire' => 'boolean',
+        'salary'              => 'decimal:2',
     ];
 
-    // ── Relationships ────────────────────────────────────────
-
-    public function employee(): BelongsTo
+    // ── Accessors ──────────────────────────────────────────────────────────────
+    public function getIsActiveAttribute(): bool
     {
-        return $this->belongsTo(Employee::class);
+        return is_null($this->end_date);
     }
-
-    public function employer(): BelongsTo
-    {
-        return $this->belongsTo(Employer::class);
-    }
-
-    public function feedback(): HasOne
-    {
-        return $this->hasOne(ProfessionalFeedback::class);
-    }
-
-    // ── Accessors ────────────────────────────────────────────
 
     public function getDurationAttribute(): string
     {
-        $end    = $this->end_date ?? now();
-        $months = $this->start_date->diffInMonths($end);
-        $years  = intdiv($months, 12);
-        $rem    = $months % 12;
-
+        $end = $this->end_date ?? now()->toDateObject();
+        $diff = $this->start_date->diff($end);
         $parts = [];
-        if ($years) $parts[] = "{$years} yr" . ($years > 1 ? 's' : '');
-        if ($rem)   $parts[] = "{$rem} mo";
+        if ($diff->y) $parts[] = "{$diff->y}y";
+        if ($diff->m) $parts[] = "{$diff->m}m";
+        if (!$diff->y && !$diff->m) $parts[] = "{$diff->d}d";
+        return implode(' ', $parts) ?: '< 1 day';
+    }
 
-        return implode(' ', $parts) ?: 'Less than a month';
+    public function getConductBadgeAttribute(): string
+    {
+        return match ($this->conduct_rating) {
+            'excellent'  => 'bg-emerald-100 text-emerald-800',
+            'good'       => 'bg-blue-100 text-blue-800',
+            'satisfactory' => 'bg-amber-100 text-amber-800',
+            'poor'       => 'bg-orange-100 text-orange-800',
+            'very_poor'  => 'bg-red-100 text-red-800',
+            default      => 'bg-gray-100 text-gray-800',
+        };
     }
 
     public function getExitReasonLabelAttribute(): string
     {
-        return match($this->exit_reason) {
-            'resignation'            => 'Resignation',
-            'contract_expiry'        => 'Contract Expiry',
-            'mutual_agreement'       => 'Mutual Agreement',
-            'redundancy'             => 'Redundancy',
-            'dismissal_misconduct'   => 'Dismissal — Misconduct',
-            'dismissal_performance'  => 'Dismissal — Performance',
-            'medical_grounds'        => 'Medical Grounds',
-            'retirement'             => 'Retirement',
-            'death'                  => 'Death',
-            'other'                  => 'Other',
-            default                  => 'N/A',
+        return match ($this->exit_reason) {
+            'resigned'         => 'Resigned',
+            'terminated'       => 'Terminated',
+            'contract_ended'   => 'Contract Ended',
+            'transferred'      => 'Transferred',
+            'retired'          => 'Retired',
+            'deceased'         => 'Deceased',
+            'redundancy'       => 'Redundancy',
+            'mutual_agreement' => 'Mutual Agreement',
+            default            => 'Other',
         };
     }
 
-    // ── Scopes ───────────────────────────────────────────────
-
-    public function scopeCurrent($query)
+    // ── Relationships ──────────────────────────────────────────────────────────
+    public function employee()
     {
-        return $query->where('is_current', true);
+        return $this->belongsTo(Employee::class);
     }
 
-    public function scopeVerified($query)
+    public function employer()
     {
-        return $query->where('employer_verified', true);
+        return $this->belongsTo(Employer::class);
     }
 
-    public function scopeUnderDispute($query)
+    public function recordedBy()
     {
-        return $query->where('under_dispute', true);
+        return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function claims()
+    {
+        return $this->hasMany(Claim::class);
     }
 }
