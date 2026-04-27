@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployerController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\GovernmentController;
 
 // ── Public Routes ────────────────────────────────────────────
 Route::get('/', function () {
@@ -80,6 +81,31 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/feedback',                           [AdminController::class, 'feedback'])->name('feedback.index');
     Route::patch('/feedback/{feedback}/moderate',     [AdminController::class, 'moderateFeedback'])->name('feedback.moderate');
 });
+
+Route::prefix('gov')->middleware(['auth', 'role:admin'])->group(function () {
+
+    Route::get('/dashboard', [GovernmentController::class, 'dashboard']);
+
+    // Employers
+    Route::get('/employers', [GovernmentController::class, 'employers']);
+    Route::post('/employers/{id}/verify', [GovernmentController::class, 'verifyEmployer']);
+    Route::post('/employers/{id}/reject', [GovernmentController::class, 'rejectEmployer']);
+    Route::post('/employers/{id}/suspend', [GovernmentController::class, 'suspendEmployer']);
+
+    // Employees
+    Route::get('/employees', [GovernmentController::class, 'employees']);
+    Route::get('/employees/{id}/history', [GovernmentController::class, 'employeeHistory']);
+
+    // Transfers
+    Route::get('/transfers', [GovernmentController::class, 'transfers']);
+    Route::post('/transfers/{id}/approve', [GovernmentController::class, 'approveTransfer']);
+    Route::post('/transfers/{id}/reject', [GovernmentController::class, 'rejectTransfer']);
+
+    // Claims
+    Route::get('/claims', [GovernmentController::class, 'claims']);
+    Route::post('/claims/{id}/resolve', [GovernmentController::class, 'resolveClaim']);
+});
+
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
