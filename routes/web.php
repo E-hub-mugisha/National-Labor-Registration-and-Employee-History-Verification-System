@@ -20,29 +20,13 @@ Route::get('/', function () {
 // ── Authentication Routes ────────────────────────────────────
 Auth::routes(['verify' => true]);
 
-Route::middleware(['auth', 'verified'])->prefix('employees')->name('employees.')->group(function () {
+
+
+Route::get('/employees/search', [EmployeeController::class, 'search'])
+    ->name('employees.search');
  
-    // Listing — /employees
-    Route::get('/', [EmployeeController::class, 'index'])->name('index');
- 
-    // Search — /employees/search
-    Route::get('/search', [EmployeeController::class, 'search'])->name('search');
- 
-    // Register new employee — /employees/create + /employees
-    Route::get('/create', [EmployeeController::class, 'create'])->name('create');
-    Route::post('/', [EmployeeController::class, 'store'])->name('store');
- 
-    // Profile — /employees/{employee}
-    Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');
- 
-    // Exit (end employment) — /employees/{employee}/exit
-    Route::get('/{employee}/exit', [EmployeeController::class, 'exitForm'])->name('exit');
-    Route::post('/{employee}/exit', [EmployeeController::class, 'recordExit'])->name('recordExit');
- 
-    // Transfer request — /employees/{employee}/transfer
-    Route::post('/{employee}/transfer', [EmployeeController::class, 'requestTransfer'])->name('transfer');
- 
-});
+// Standard CRUD
+Route::resource('employees', EmployeeController::class);
 
 // ── Employer Routes ──────────────────────────────────────────
 Route::prefix('employer')->name('employer.')->middleware(['auth'])->group(function () {

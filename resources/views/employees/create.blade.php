@@ -1,53 +1,24 @@
+{{-- resources/views/employees/create.blade.php --}}
 @extends('layouts.app')
 
+@section('title', 'New Employee')
+
 @section('content')
-<div class="container mx-auto p-6 max-w-3xl">
 
-    <h2 class="text-2xl font-bold mb-4">Add Employee</h2>
+{{-- Breadcrumb --}}
+<nav class="mb-5 flex items-center gap-2 text-sm text-slate-500">
+    <a href="{{ route('employees.index') }}" class="hover:text-blue-600 transition">Employees</a>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-slate-800 font-medium">New Employee</span>
+</nav>
 
-    <form method="POST" action="{{ route('employees.store') }}" enctype="multipart/form-data">
-        @csrf
+<h1 class="mb-6 text-2xl font-bold text-slate-900">Add New Employee</h1>
 
-        <div class="grid grid-cols-2 gap-4">
+<form method="POST" action="{{ route('employees.store') }}" enctype="multipart/form-data">
+    @csrf
+    @include('employees.form')
+</form>
 
-            <input name="first_name" placeholder="First Name" class="border p-2">
-            <input name="last_name" placeholder="Last Name" class="border p-2">
-
-            <input name="middle_name" placeholder="Middle Name" class="border p-2">
-
-            <input name="national_id" placeholder="National ID" class="border p-2">
-
-            <input name="email" placeholder="Email" class="border p-2">
-
-            <input name="phone" placeholder="Phone" class="border p-2">
-
-            <input type="date" name="date_of_birth" class="border p-2">
-
-            <select name="gender" class="border p-2">
-                <option value="">Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-            </select>
-
-            <input name="province" placeholder="Province" class="border p-2">
-            <input name="district" placeholder="District" class="border p-2">
-
-            <input name="skills" placeholder="Skills" class="border p-2">
-            <input name="highest_qualification" placeholder="Qualification" class="border p-2">
-
-            <input name="position" placeholder="Position" class="border p-2">
-            <input name="department" placeholder="Department" class="border p-2">
-
-            <input type="date" name="start_date" class="border p-2">
-
-            <input type="file" name="photo" class="border p-2 col-span-2">
-
-        </div>
-
-        <button class="bg-blue-600 text-white px-6 py-2 mt-4 rounded">
-            Save Employee
-        </button>
-    </form>
-</div>
 @endsection

@@ -242,6 +242,19 @@
                 class="nav-link {{ request()->routeIs('employer.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-person-plus me-2"></i>Report New Hire
             </a>
+            <a href="{{ route('employees.index') }}" class="nav-link">
+                HR Employees
+            </a>
+
+            <a href="{{ route('employees.index') }}" class="nav-link">
+                All Employees
+            </a>
+            <a href="{{ route('employees.search') }}" class="nav-link">
+                ID Search
+            </a>
+            <a href="{{ route('employees.create') }}" class="nav-link">
+                New Employee
+            </a>
             <div class="nav-section mt-2">Verification</div>
             <a href="{{ route('employer.verify.index') }}"
                 class="nav-link {{ request()->routeIs('employer.verify*') ? 'active' : '' }}">
