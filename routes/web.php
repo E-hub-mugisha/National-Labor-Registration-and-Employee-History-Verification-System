@@ -7,12 +7,15 @@ use App\Http\Controllers\EmployerController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\GovernmentController;
 
 // ── Public Routes ────────────────────────────────────────────
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+
 
 // ── Authentication Routes ────────────────────────────────────
 Auth::routes(['verify' => true]);
