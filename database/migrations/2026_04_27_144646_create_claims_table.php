@@ -13,19 +13,75 @@ return new class extends Migration
     {
         Schema::create('claims', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->foreignId('employment_record_id')->constrained('employment_records')->onDelete('cascade');
+
+            // ─────────────────────────────────────────────
+            // Relationships
+            // ─────────────────────────────────────────────
+            $table->foreignId('employee_id')
+                ->constrained('employees')
+                ->cascadeOnDelete();
+
+            $table->foreignId('employment_record_id')
+                ->nullable()
+                ->constrained('employment_records')
+                ->nullOnDelete();
+
+            // ─────────────────────────────────────────────
+            // Claim Identification
+            // ─────────────────────────────────────────────
+            $table->string('reference_number')->unique(); // e.g CLM-2026-000001
+
+            // ─────────────────────────────────────────────
+            // Claim Details
+            // ─────────────────────────────────────────────
             $table->enum('claim_type', [
-                'wrong_exit_reason', 'wrong_conduct_rating', 'wrong_dates',
-                'wrong_position', 'wrong_remarks', 'other'
+                'wrong_exit_reason',
+                'wrong_conduct_rating',
+                'wrong_dates',
+                'wrong_position',
+                'wrong_remarks',
+                'other'
             ]);
-            $table->text('description');                    // Employee's explanation of mismatch
-            $table->string('evidence_file')->nullable();    // Optional uploaded evidence
-            $table->enum('status', ['pending', 'under_review', 'resolved', 'rejected'])->default('pending');
-            $table->text('admin_note')->nullable();         // Govt/admin response
-            $table->text('employer_response')->nullable();   // Previous employer's response
-            $table->foreignId('reviewed_by')->nullable()->constrained('users');
+
+            $table->text('description'); // Employee explanation
+
+            // ─────────────────────────────────────────────
+            // Evidence
+            // ─────────────────────────────────────────────
+            $table->string('evidence_file')->nullable();
+
+            // ─────────────────────────────────────────────
+            // Status Lifecycle
+            // ─────────────────────────────────────────────
+            $table->enum('status', [
+                'pending',
+                'under_review',
+                'resolved',
+                'rejected'
+            ])->default('pending');
+
+            // Optional priority (gov use)
+            $table->enum('priority', ['low', 'medium', 'high'])
+                ->default('medium');
+
+            // ─────────────────────────────────────────────
+            // Responses
+            // ─────────────────────────────────────────────
+            $table->text('employer_response')->nullable(); // Employer side
+            $table->text('admin_note')->nullable();        // Govt decision
+
+            // ─────────────────────────────────────────────
+            // Audit / Tracking
+            // ─────────────────────────────────────────────
+            $table->foreignId('reviewed_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
             $table->timestamp('reviewed_at')->nullable();
+
+            // Soft delete for audit safety
+            $table->softDeletes();
             $table->timestamps();
         });
     }

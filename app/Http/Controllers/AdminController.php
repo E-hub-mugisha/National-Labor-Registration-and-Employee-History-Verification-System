@@ -63,6 +63,57 @@ class AdminController extends Controller
         return view('admin.employers.index', compact('employers'));
     }
 
+    public function showEmployer(Employer $employer)
+    {
+        $employer->load([
+            'user',
+            'employmentRecords' => fn($q) => $q->with([
+                'employee',
+                'feedback',
+            ])->orderByDesc('start_date'),
+            'activeEmploymentRecords.employee',
+        ]);
+
+        // Aggregate stats
+        $stats = [
+            'total_employees'  => $employer->employmentRecords->count(),
+            'active_employees' => $employer->activeEmploymentRecords->count(),
+            'exited_employees' => $employer->employmentRecords->whereNotNull('end_date')->count(),
+            'avg_rating'       => $employer->employmentRecords
+                ->map(fn($r) => optional($r->feedback)->rating)
+                ->filter()
+                ->avg(),
+            'total_feedback'   => $employer->employmentRecords
+                ->filter(fn($r) => $r->feedback !== null)
+                ->count(),
+            'avg_tenure_months' => $employer->employmentRecords
+                ->whereNotNull('end_date')
+                ->map(function ($r) {
+                    return \Carbon\Carbon::parse($r->start_date)
+                        ->diffInMonths(\Carbon\Carbon::parse($r->end_date));
+                })
+                ->avg(),
+        ];
+
+        return view('admin.employers.show', compact('employer', 'stats'));
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  EMPLOYEES — SHOW
+    // ═════════════════════════════════════════════════════════════════════════
+
+    public function showEmployee(Employee $employee)
+    {
+        $employee->load([
+            'user',
+            'employmentRecords' => fn($q) => $q->with(['employer', 'feedback'])->orderByDesc('start_date'),
+            'feedbacks.employer',
+            'claims',
+            'verifiedBy',
+        ]);
+
+        return view('admin.employees.show', compact('employee'));
+    }
     // Verify or reject employer
     public function verifyEmployer(Request $request, Employer $employer)
     {
@@ -96,13 +147,34 @@ class AdminController extends Controller
     }
 
     // List all employees
-    public function employees()
+    public function employees(Request $request)
     {
-        $employees = Employee::with('user')
-            ->latest()
-            ->paginate(15);
+        $query = Employee::with('currentEmployer')->withTrashed(false);
 
-        return view('admin.employees.index', compact('employees'));
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('first_name',  'like', "%{$s}%")
+                    ->orWhere('last_name',  'like', "%{$s}%")
+                    ->orWhere('national_id', 'like', "%{$s}%")
+                    ->orWhere('email',      'like', "%{$s}%")
+                    ->orWhere('phone',      'like', "%{$s}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('province')) {
+            $query->where('province', $request->province);
+        }
+
+        $employees = $query->latest()->paginate(15)->withQueryString();
+
+        $provinces = Employee::distinct()->pluck('province')->filter()->sort()->values();
+
+        return view('admin.employees.index', compact('employees', 'provinces'));
     }
 
     // Verify employee National ID

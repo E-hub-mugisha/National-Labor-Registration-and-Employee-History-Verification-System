@@ -8,6 +8,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\GovernmentController;
 
 // ── Public Routes ────────────────────────────────────────────
@@ -15,17 +16,35 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-
-
 // ── Authentication Routes ────────────────────────────────────
 Auth::routes(['verify' => true]);
 
+// ── Employee Routes ──────────────────────────────────────────
+Route::middleware(['auth'])->group(function () {
 
+    Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
+        ->name('employee.dashboard');
 
+    Route::get('/get/employee/records', [EmployeeDashboardController::class, 'records'])
+        ->name('employee.records.index');
+
+    Route::post('/employee/claim', [EmployeeDashboardController::class, 'storeClaim'])
+        ->name('employee.claim.store');
+
+    Route::post('/employee/record/accept', [EmployeeDashboardController::class, 'acceptRecord'])
+        ->name('employee.record.accept');
+
+    Route::get('/employee/profile', [EmployeeDashboardController::class, 'showProfile'])
+        ->name('employee.profile');
+
+    Route::get('/employee/feedback', [EmployeeDashboardController::class, 'showFeedback'])
+        ->name('employee.feedback.index');
+});
+
+// ── Employee Search & Resource ───────────────────────────────
 Route::get('/employees/search', [EmployeeController::class, 'search'])
     ->name('employees.search');
- 
-// Standard CRUD
+
 Route::resource('employees', EmployeeController::class);
 
 // ── Employer Routes ──────────────────────────────────────────
@@ -37,62 +56,61 @@ Route::prefix('employer')->name('employer.')->middleware(['auth'])->group(functi
     Route::get('/pending',    [EmployerController::class, 'pending'])->name('pending');
 
     // Employment management
-    Route::post('/employment/report',          [EmployerController::class, 'reportEmployment'])->name('employment.report');
-    Route::patch('/employment/{record}/exit',  [EmployerController::class, 'reportExit'])->name('employment.exit');
+    Route::post('/employment/report',         [EmployerController::class, 'reportEmployment'])->name('employment.report');
+    Route::patch('/employment/{record}/exit', [EmployerController::class, 'reportExit'])->name('employment.exit');
 
-    // Feedback submission
+    // Feedback
     Route::get('/feedback/{record}/create',  [FeedbackController::class, 'create'])->name('feedback.create');
     Route::post('/feedback/{record}',        [FeedbackController::class, 'store'])->name('feedback.store');
 
     // Verification portal
-    Route::get('/verify',                      [VerificationController::class, 'index'])->name('verify.index');
-    Route::post('/verify/search',              [VerificationController::class, 'search'])->name('verify.search');
-    Route::get('/verify/profile/{employee}',   [VerificationController::class, 'show'])->name('verify.profile');
+    Route::get('/verify',                    [VerificationController::class, 'index'])->name('verify.index');
+    Route::post('/verify/search',            [VerificationController::class, 'search'])->name('verify.search');
+    Route::get('/verify/profile/{employee}', [VerificationController::class, 'show'])->name('verify.profile');
 });
 
 // ── Admin Routes ─────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard',   [AdminController::class, 'dashboard'])->name('dashboard');
-    Route::get('/statistics',  [AdminController::class, 'statistics'])->name('statistics');
-    Route::get('/audit-log',   [AdminController::class, 'auditLog'])->name('audit-log');
+    Route::get('/dashboard',  [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/statistics', [AdminController::class, 'statistics'])->name('statistics');
+    Route::get('/audit-log',  [AdminController::class, 'auditLog'])->name('audit-log');
 
     // Employer management
-    Route::get('/employers',                          [AdminController::class, 'employers'])->name('employers.index');
-    Route::patch('/employers/{employer}/verify',      [AdminController::class, 'verifyEmployer'])->name('employers.verify');
+    Route::get('/employers',                     [AdminController::class, 'employers'])->name('employers.index');
+    Route::get('/employers/{employer}',          [AdminController::class, 'showEmployer'])->name('employers.show');
+    Route::patch('/employers/{employer}/verify', [AdminController::class, 'verifyEmployer'])->name('employers.verify');
 
     // Employee management
-    Route::get('/employees',  [AdminController::class, 'employees'])->name('employees.index');
-    Route::patch('/employees/{employee}/verify',        [AdminController::class, 'verifyEmployee'])->name('employees.verify');
+    Route::get('/employees',                     [AdminController::class, 'employees'])->name('employees.index');
+    Route::patch('/employees/{employee}/verify', [AdminController::class, 'verifyEmployee'])->name('employees.verify');
+
     // Feedback moderation
-    Route::get('/feedback',                           [AdminController::class, 'feedback'])->name('feedback.index');
-    Route::patch('/feedback/{feedback}/moderate',     [AdminController::class, 'moderateFeedback'])->name('feedback.moderate');
+    Route::get('/feedback',                          [AdminController::class, 'feedback'])->name('feedback.index');
+    Route::patch('/feedback/{feedback}/moderate',    [AdminController::class, 'moderateFeedback'])->name('feedback.moderate');
 });
 
-Route::prefix('gov')->middleware(['auth', 'role:admin'])->group(function () {
+// ── Government Routes ─────────────────────────────────────────
+Route::prefix('gov')->name('gov.')->middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', [GovernmentController::class, 'dashboard']);
+    Route::get('/dashboard', [GovernmentController::class, 'dashboard'])->name('dashboard');
 
     // Employers
-    Route::get('/employers', [GovernmentController::class, 'employers']);
-    Route::post('/employers/{id}/verify', [GovernmentController::class, 'verifyEmployer']);
-    Route::post('/employers/{id}/reject', [GovernmentController::class, 'rejectEmployer']);
-    Route::post('/employers/{id}/suspend', [GovernmentController::class, 'suspendEmployer']);
+    Route::get('/employers',                   [GovernmentController::class, 'employers'])->name('employers.index');
+    Route::post('/employers/{id}/verify',      [GovernmentController::class, 'verifyEmployer'])->name('employers.verify');
+    Route::post('/employers/{id}/reject',      [GovernmentController::class, 'rejectEmployer'])->name('employers.reject');
+    Route::post('/employers/{id}/suspend',     [GovernmentController::class, 'suspendEmployer'])->name('employers.suspend');
 
     // Employees
-    Route::get('/employees', [GovernmentController::class, 'employees']);
-    Route::get('/employees/{id}/history', [GovernmentController::class, 'employeeHistory']);
+    Route::get('/employees',                   [GovernmentController::class, 'employees'])->name('employees.index');
+    Route::get('/employees/{id}/history',      [GovernmentController::class, 'employeeHistory'])->name('employees.history');
 
     // Transfers
-    Route::get('/transfers', [GovernmentController::class, 'transfers']);
-    Route::post('/transfers/{id}/approve', [GovernmentController::class, 'approveTransfer']);
-    Route::post('/transfers/{id}/reject', [GovernmentController::class, 'rejectTransfer']);
+    Route::get('/transfers',                   [GovernmentController::class, 'transfers'])->name('transfers.index');
+    Route::post('/transfers/{id}/approve',     [GovernmentController::class, 'approveTransfer'])->name('transfers.approve');
+    Route::post('/transfers/{id}/reject',      [GovernmentController::class, 'rejectTransfer'])->name('transfers.reject');
 
     // Claims
-    Route::get('/claims', [GovernmentController::class, 'claims']);
-    Route::post('/claims/{id}/resolve', [GovernmentController::class, 'resolveClaim']);
+    Route::get('/claims',                      [GovernmentController::class, 'claims'])->name('claims.index');
+    Route::post('/claims/{id}/resolve',        [GovernmentController::class, 'resolveClaim'])->name('claims.resolve');
 });
-
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -5,211 +5,649 @@
 
 @section('content')
 
-<div class="mx-auto max-w-2xl">
+<style>
 
-    {{-- ── Page heading ──────────────────────────────────────────────────── --}}
-    <div class="mb-8 text-center">
-        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-700 shadow-lg">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0M9 14h.01M15 14h.01M9 10h6"/>
-            </svg>
+    /* ── Page layout ── */
+    .search-page-wrap {
+        max-width: 680px;
+    }
+
+    /* ── Hero icon ── */
+    .search-hero-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--navy-700), var(--navy-500));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(15,32,64,.3), 0 0 0 6px rgba(15,32,64,.08);
+    }
+
+    /* ── Search form card ── */
+    .search-form-card {
+        background: #fff;
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem;
+        box-shadow: var(--shadow-md);
+    }
+
+    .search-input-group { border-radius: var(--radius-md); overflow: hidden; }
+
+    .search-input-icon {
+        background: var(--slate-100);
+        border-color: var(--slate-200);
+        color: var(--navy-600);
+        font-size: 1.05rem;
+        border-right: none;
+        padding: 0 .9rem;
+    }
+
+    .search-input {
+        border-color: var(--slate-200);
+        border-left: none;
+        font-size: .95rem;
+        letter-spacing: .04em;
+        padding: .65rem .85rem;
+        box-shadow: none !important;
+    }
+
+    .search-input:focus { border-color: var(--navy-500); }
+
+    .search-input:focus + .btn-search,
+    .search-input-group:focus-within .search-input-icon {
+        border-color: var(--navy-500);
+    }
+
+    .btn-search {
+        background: var(--navy-600);
+        border-color: var(--navy-600);
+        color: #fff;
+        font-weight: 700;
+        font-size: .88rem;
+        padding: 0 1.5rem;
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+        transition: var(--transition);
+    }
+
+    .btn-search:hover {
+        background: var(--navy-700);
+        border-color: var(--navy-700);
+        color: #fff;
+    }
+
+    .search-hint {
+        font-size: .72rem;
+        color: var(--slate-400);
+    }
+
+    /* ── State cards (idle / not found) ── */
+    .state-card {
+        border: 1.5px dashed var(--slate-200);
+        border-radius: var(--radius-lg);
+        background: #fff;
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+    }
+
+    .state-notfound {
+        border-color: #FDE68A;
+        background: #FFFBEB;
+    }
+
+    .state-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: var(--slate-100);
+        color: var(--slate-400);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto .9rem;
+    }
+
+    .state-icon--warning {
+        background: #FEF3C7;
+        color: #D97706;
+    }
+
+    .state-title {
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--slate-700);
+        margin-bottom: .35rem;
+    }
+
+    .state-text {
+        font-size: .82rem;
+        color: var(--slate-500);
+        margin: 0;
+    }
+
+    .state-tips {
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+        align-items: center;
+    }
+
+    .state-tip {
+        font-size: .76rem;
+        color: var(--slate-500);
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .nid-code {
+        font-family: 'DM Mono', monospace;
+        font-size: .85em;
+        background: #FEF3C7;
+        color: #92400E;
+        padding: 2px 7px;
+        border-radius: 5px;
+        border: 1px solid #FDE68A;
+    }
+
+    /* ── Result card ── */
+    .result-card {
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius-lg);
+        background: #fff;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        animation: slideUp .22s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-status-bar {
+        height: 5px;
+        width: 100%;
+    }
+
+    /* ── Profile row ── */
+    .result-profile {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.1rem;
+        padding: 1.25rem 1.5rem 0;
+        flex-wrap: wrap;
+    }
+
+    .result-avatar-wrap {
+        width: 76px;
+        height: 76px;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 3px solid var(--slate-200);
+        flex-shrink: 0;
+        background: #fff;
+    }
+
+    .result-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .result-avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: var(--blue-100);
+        color: var(--navy-600);
+        font-weight: 800;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: -.02em;
+    }
+
+    .result-identity { flex: 1; min-width: 0; }
+
+    .result-name {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--slate-800);
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    /* ── Info chips ── */
+    .info-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        font-size: .73rem;
+        color: var(--slate-600);
+        background: var(--slate-100);
+        padding: .25rem .65rem;
+        border-radius: 20px;
+        border: 1px solid var(--slate-200);
+    }
+
+    .info-chip i { color: var(--slate-400); font-size: .75rem; }
+
+    /* ── Details grid ── */
+    .result-details-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+        margin: 1rem 0 0;
+        border-top: 1px solid var(--slate-100);
+    }
+
+    .result-detail-item {
+        padding: .85rem 1.5rem;
+        border-bottom: 1px solid var(--slate-100);
+        border-right: 1px solid var(--slate-100);
+    }
+
+    .result-detail-item:nth-child(3n) { border-right: none; }
+    .result-detail-full { grid-column: 1 / -1; border-right: none; }
+
+    .result-detail-label {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--slate-400);
+        margin-bottom: .25rem;
+    }
+
+    .result-detail-value {
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--slate-700);
+    }
+
+    .result-detail-sub {
+        font-weight: 400;
+        color: var(--slate-400);
+        font-size: .78rem;
+    }
+
+    /* ── Skills ── */
+    .skill-tag {
+        display: inline-block;
+        font-size: .7rem;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 20px;
+        background: var(--blue-100);
+        color: var(--navy-600);
+        border: 1px solid rgba(30,58,110,.1);
+    }
+
+    /* ── Result sections (employment, claims) ── */
+    .result-section {
+        border-top: 1px solid var(--slate-100);
+        padding: .9rem 1.5rem;
+    }
+
+    .result-section-label {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--slate-400);
+        margin-bottom: .6rem;
+    }
+
+    /* ── Employment mini-list ── */
+    .result-emp-list { display: flex; flex-direction: column; gap: .45rem; }
+
+    .result-emp-row {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        font-size: .8rem;
+    }
+
+    .result-emp-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--slate-300);
+        flex-shrink: 0;
+    }
+
+    .result-emp-dot--active { background: var(--green-500); }
+
+    .result-emp-name {
+        font-weight: 600;
+        color: var(--slate-700);
+        flex: 1;
+    }
+
+    .result-emp-dates { color: var(--slate-400); font-size: .75rem; }
+
+    .result-emp-more {
+        font-size: .73rem;
+        color: var(--slate-400);
+        padding-left: 1.3rem;
+        font-style: italic;
+    }
+
+    /* ── Result footer ── */
+    .result-footer {
+        border-top: 1px solid var(--slate-100);
+        padding: .85rem 1.5rem;
+        background: var(--slate-50);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+
+    .result-footer-meta {
+        font-size: .73rem;
+        color: var(--slate-400);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 575.98px) {
+        .result-details-grid { grid-template-columns: repeat(2, 1fr); }
+        .result-detail-item:nth-child(3n) { border-right: 1px solid var(--slate-100); }
+        .result-detail-item:nth-child(2n) { border-right: none; }
+        .result-profile { flex-direction: column; }
+    }
+</style>
+
+<div class="search-page-wrap mx-auto">
+
+    {{-- ── Page Heading ──────────────────────────────────────────────────── --}}
+    <div class="text-center mb-4">
+        <div class="search-hero-icon mx-auto mb-3">
+            <i class="bi bi-person-badge"></i>
         </div>
-        <h1 class="text-2xl font-bold text-slate-900">Employee Lookup</h1>
-        <p class="mt-1 text-slate-500">Enter a National ID to retrieve the employee record instantly.</p>
+        <h1 class="page-title">Employee Lookup</h1>
+        <p class="page-subtitle mx-auto" style="max-width:420px;">
+            Enter a National ID number to retrieve the employee's full registry record instantly.
+        </p>
     </div>
 
-    {{-- ── Search form ───────────────────────────────────────────────────── --}}
-    <form method="GET" action="{{ route('employees.search') }}"
-          class="flex gap-3">
-        <div class="relative flex-1">
-            <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-            </svg>
+    {{-- ── Search Form ───────────────────────────────────────────────────── --}}
+    <form method="GET" action="{{ route('employees.search') }}" class="search-form-card mb-4">
+        <div class="input-group input-group-lg search-input-group">
+            <span class="input-group-text search-input-icon">
+                <i class="bi bi-credit-card-2-front"></i>
+            </span>
             <input type="text"
                    name="national_id"
                    id="national_id"
                    value="{{ request('national_id') }}"
                    autofocus
                    autocomplete="off"
-                   placeholder="Enter National ID…"
-                   class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 font-mono text-base shadow-sm
-                          focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
+                   spellcheck="false"
+                   placeholder="Enter National ID number…"
+                   class="form-control search-input font-mono">
+            <button type="submit" class="btn btn-search">
+                <i class="bi bi-search me-2"></i>
+                Search
+            </button>
         </div>
-        <button type="submit"
-                class="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white shadow hover:bg-blue-800 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-            </svg>
-            Search
-        </button>
+        <div class="search-hint mt-2 text-center">
+            <i class="bi bi-shield-lock me-1"></i>
+            Searches are logged in the audit trail for compliance purposes.
+        </div>
     </form>
 
-    {{-- ── Results ────────────────────────────────────────────────────────── --}}
-    <div class="mt-8">
+    {{-- ══════════════════════════════════════════
+         STATE: Initial (no search yet)
+    ══════════════════════════════════════════ --}}
+    @if(! $searched)
+    <div class="state-card state-idle">
+        <div class="state-icon">
+            <i class="bi bi-search"></i>
+        </div>
+        <div class="state-title">Ready to search</div>
+        <p class="state-text">Type a National ID in the field above and press <strong>Search</strong> to look up an employee.</p>
 
-        {{-- Not found state --}}
-        @if($searched && ! $employee)
-            <div class="rounded-xl border border-amber-200 bg-amber-50 px-6 py-8 text-center">
-                <svg class="mx-auto mb-3 w-12 h-12 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-                </svg>
-                <p class="font-semibold text-amber-800">No record found</p>
-                <p class="mt-1 text-sm text-amber-700">
-                    No employee matched National ID
-                    <strong class="font-mono">{{ request('national_id') }}</strong>.
-                </p>
-                <a href="{{ route('employees.create') }}"
-                   class="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Add New Employee
+        <div class="state-tips mt-3">
+            <div class="state-tip">
+                <i class="bi bi-info-circle text-primary"></i>
+                National IDs are 16 digits long
+            </div>
+            <div class="state-tip">
+                <i class="bi bi-info-circle text-primary"></i>
+                Partial IDs are not supported — enter the full number
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════
+         STATE: Searched but not found
+    ══════════════════════════════════════════ --}}
+    @if($searched && ! $employee)
+    <div class="state-card state-notfound">
+        <div class="state-icon state-icon--warning">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div class="state-title">No record found</div>
+        <p class="state-text">
+            No employee matched National ID
+            <code class="nid-code">{{ request('national_id') }}</code>.
+        </p>
+        <div class="d-flex align-items-center justify-content-center gap-2 mt-3 flex-wrap">
+            <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to list
+            </a>
+            <a href="{{ route('employees.create') }}" class="btn btn-success btn-sm">
+                <i class="bi bi-person-plus me-1"></i> Register this employee
+            </a>
+        </div>
+    </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════
+         STATE: Employee found
+    ══════════════════════════════════════════ --}}
+    @if($employee)
+
+    @php
+        $statusMap = [
+            'active'      => ['cls' => 'badge-verified', 'icon' => 'check-circle-fill', 'bar' => '#00B85A'],
+            'unemployed'  => ['cls' => 'badge-pending',  'icon' => 'clock-fill',         'bar' => '#F59E0B'],
+            'blacklisted' => ['cls' => 'badge-rejected', 'icon' => 'x-circle-fill',      'bar' => '#DC2626'],
+        ];
+        $s = $statusMap[$employee->status] ?? ['cls' => 'badge-pending', 'icon' => 'dash-circle', 'bar' => '#94A3B8'];
+    @endphp
+
+    <div class="result-card">
+
+        {{-- Status bar --}}
+        <div class="result-status-bar" style="background:{{ $s['bar'] }};"></div>
+
+        {{-- ── Profile section ── --}}
+        <div class="result-profile">
+
+            {{-- Avatar --}}
+            <div class="result-avatar-wrap">
+                @if($employee->photo)
+                    <img src="{{ Storage::url($employee->photo) }}"
+                         alt="{{ $employee->full_name }}"
+                         class="result-avatar-img">
+                @else
+                    <div class="result-avatar-placeholder">
+                        {{ strtoupper(substr($employee->first_name,0,1).substr($employee->last_name,0,1)) }}
+                    </div>
+                @endif
+            </div>
+
+            {{-- Identity --}}
+            <div class="result-identity">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                    <h2 class="result-name">{{ $employee->full_name }}</h2>
+                    <span class="{{ $s['cls'] }}">
+                        <i class="bi bi-{{ $s['icon'] }} me-1"></i>{{ ucfirst($employee->status) }}
+                    </span>
+                </div>
+                <div class="mb-2">
+                    <span class="nida-badge">
+                        <i class="bi bi-credit-card-2-front"></i>
+                        {{ $employee->national_id }}
+                    </span>
+                </div>
+
+                {{-- Contact row --}}
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="info-chip"><i class="bi bi-telephone-fill"></i>{{ $employee->phone }}</span>
+                    <span class="info-chip"><i class="bi bi-envelope-fill"></i>{{ $employee->email }}</span>
+                    @if($employee->province)
+                    <span class="info-chip">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        {{ collect([$employee->district, $employee->province])->filter()->implode(', ') }}
+                    </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- ── Quick details grid ── --}}
+        <div class="result-details-grid">
+
+            <div class="result-detail-item">
+                <div class="result-detail-label">Date of Birth</div>
+                <div class="result-detail-value">
+                    {{ $employee->date_of_birth->format('d M Y') }}
+                    <span class="result-detail-sub">({{ $employee->age }} yrs)</span>
+                </div>
+            </div>
+
+            <div class="result-detail-item">
+                <div class="result-detail-label">Gender</div>
+                <div class="result-detail-value">{{ ucfirst($employee->gender) }}</div>
+            </div>
+
+            <div class="result-detail-item">
+                <div class="result-detail-label">Current Employer</div>
+                <div class="result-detail-value">
+                    {{ $employee->currentEmployer?->name ?? '—' }}
+                </div>
+            </div>
+
+            @if($employee->highest_qualification)
+            <div class="result-detail-item" style="grid-column: span 2;">
+                <div class="result-detail-label">Qualification</div>
+                <div class="result-detail-value">{{ $employee->highest_qualification }}</div>
+            </div>
+            @endif
+
+            @if($employee->skills)
+            <div class="result-detail-item result-detail-full">
+                <div class="result-detail-label">Skills</div>
+                <div class="result-detail-value">
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        @foreach(preg_split('/[\n,]+/', $employee->skills) as $skill)
+                            @php $skill = trim($skill); @endphp
+                            @if($skill)
+                                <span class="skill-tag">{{ $skill }}</span>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
+        </div>
+
+        {{-- ── Employment snippet ── --}}
+        @if($employee->employmentRecords->isNotEmpty())
+        <div class="result-section">
+            <div class="result-section-label">
+                <i class="bi bi-briefcase-fill me-1"></i> Employment History
+                <span class="ms-1 badge rounded-pill"
+                      style="background:var(--blue-100);color:var(--navy-600);font-size:.65rem;font-weight:700;vertical-align:middle;">
+                    {{ $employee->employmentRecords->count() }}
+                </span>
+            </div>
+            <div class="result-emp-list">
+                @foreach($employee->employmentRecords->take(3) as $record)
+                <div class="result-emp-row">
+                    <div class="result-emp-dot {{ is_null($record->end_date) ? 'result-emp-dot--active' : '' }}"></div>
+                    <span class="result-emp-name">{{ $record->employer->name ?? 'Unknown' }}</span>
+                    <span class="result-emp-dates">
+                        {{ $record->start_date?->format('M Y') }} – {{ $record->end_date?->format('M Y') ?? 'Present' }}
+                    </span>
+                    @if(is_null($record->end_date))
+                        <span class="badge-verified" style="font-size:.62rem;margin-left:.25rem;">Current</span>
+                    @endif
+                </div>
+                @endforeach
+                @if($employee->employmentRecords->count() > 3)
+                <div class="result-emp-more">
+                    <i class="bi bi-three-dots me-1"></i>
+                    {{ $employee->employmentRecords->count() - 3 }} more record(s) — view full profile
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
+
+        {{-- ── Claims snippet ── --}}
+        @if($employee->claims->isNotEmpty())
+        <div class="result-section">
+            <div class="result-section-label">
+                <i class="bi bi-flag-fill me-1"></i> Claims
+                <span class="ms-1 badge rounded-pill"
+                      style="background:#FEF3C7;color:#92400E;font-size:.65rem;font-weight:700;vertical-align:middle;">
+                    {{ $employee->claims->count() }}
+                </span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach($employee->claims->take(5) as $claim)
+                @php
+                    $cb = match($claim->status ?? '') {
+                        'approved' => 'badge-verified',
+                        'rejected' => 'badge-rejected',
+                        default    => 'badge-pending',
+                    };
+                @endphp
+                <span class="{{ $cb }}">
+                    {{ $claim->reference ?? '#' . $claim->id }}
+                    &middot; {{ ucfirst($claim->status ?? 'pending') }}
+                </span>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- ── Action footer ── --}}
+        <div class="result-footer">
+            <span class="result-footer-meta">
+                <i class="bi bi-clock me-1"></i>
+                Last updated {{ $employee->updated_at->diffForHumans() }}
+            </span>
+            <div class="d-flex gap-2">
+                <a href="{{ route('employees.edit', $employee) }}"
+                   class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="{{ route('employees.show', $employee) }}"
+                   class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                    View Full Profile <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
-        @endif
+        </div>
 
-        {{-- Found state --}}
-        @if($employee)
-            <div class="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
+    </div>{{-- /result-card --}}
+    @endif
 
-                {{-- Coloured top bar by status --}}
-                <div class="h-1.5 {{ $employee->status === 'active' ? 'bg-emerald-500' : ($employee->status === 'blacklisted' ? 'bg-red-500' : 'bg-slate-300') }}"></div>
-
-                <div class="flex flex-wrap items-start gap-5 p-6">
-                    {{-- Avatar --}}
-                    @if($employee->photo)
-                        <img src="{{ Storage::url($employee->photo) }}"
-                             alt="{{ $employee->full_name }}"
-                             class="h-20 w-20 rounded-2xl object-cover ring-4 ring-white shadow-md">
-                    @else
-                        <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-100 text-blue-700 font-bold text-2xl ring-4 ring-white shadow-md">
-                            {{ strtoupper(substr($employee->first_name, 0, 1) . substr($employee->last_name, 0, 1)) }}
-                        </div>
-                    @endif
-
-                    <div class="flex-1 min-w-0">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h2 class="text-xl font-bold text-slate-900">{{ $employee->full_name }}</h2>
-                            <span class="badge {{ $employee->status_badge }}">{{ ucfirst($employee->status) }}</span>
-                        </div>
-                        <p class="mt-0.5 font-mono text-sm text-slate-500">{{ $employee->national_id }}</p>
-
-                        {{-- Quick detail grid --}}
-                        <dl class="mt-4 grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
-                            <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Date of Birth</dt>
-                                <dd class="mt-0.5 text-slate-700">{{ $employee->date_of_birth->format('d M Y') }} ({{ $employee->age }} yrs)</dd>
-                            </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Gender</dt>
-                                <dd class="mt-0.5 text-slate-700">{{ ucfirst($employee->gender) }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Phone</dt>
-                                <dd class="mt-0.5 text-slate-700">{{ $employee->phone }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Email</dt>
-                                <dd class="mt-0.5 text-slate-700 truncate">{{ $employee->email }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Location</dt>
-                                <dd class="mt-0.5 text-slate-700">
-                                    {{ $employee->district }}{{ $employee->district && $employee->province ? ', ' : '' }}{{ $employee->province ?? '—' }}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Employer</dt>
-                                <dd class="mt-0.5 text-slate-700">{{ $employee->currentEmployer?->name ?? '—' }}</dd>
-                            </div>
-                        </dl>
-
-                        @if($employee->highest_qualification)
-                        <p class="mt-3 text-sm text-slate-600">
-                            <span class="font-medium">Qualification:</span> {{ $employee->highest_qualification }}
-                        </p>
-                        @endif
-
-                        @if($employee->skills)
-                        <p class="mt-1 text-sm text-slate-600">
-                            <span class="font-medium">Skills:</span> {{ $employee->skills }}
-                        </p>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Employment history snippet --}}
-                @if($employee->employmentRecords->isNotEmpty())
-                <div class="border-t border-slate-100 px-6 py-4">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Employment History</p>
-                    <ul class="space-y-1.5">
-                        @foreach($employee->employmentRecords->take(3) as $record)
-                        <li class="flex items-center justify-between text-sm">
-                            <span class="text-slate-700">{{ $record->employer->name ?? 'Unknown' }}</span>
-                            <span class="text-slate-400">
-                                {{ $record->start_date?->format('M Y') }} –
-                                {{ $record->end_date?->format('M Y') ?? 'Present' }}
-                            </span>
-                        </li>
-                        @endforeach
-                        @if($employee->employmentRecords->count() > 3)
-                            <li class="text-xs text-slate-400">+ {{ $employee->employmentRecords->count() - 3 }} more records</li>
-                        @endif
-                    </ul>
-                </div>
-                @endif
-
-                {{-- Claims snippet --}}
-                @if($employee->claims->isNotEmpty())
-                <div class="border-t border-slate-100 px-6 py-4">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Claims ({{ $employee->claims->count() }})</p>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach($employee->claims->take(5) as $claim)
-                        <span class="badge
-                            {{ match($claim->status ?? '') {
-                                'approved' => 'bg-emerald-100 text-emerald-800',
-                                'rejected' => 'bg-red-100 text-red-800',
-                                default    => 'bg-amber-100 text-amber-800'
-                            } }}">
-                            {{ $claim->reference ?? '#' . $claim->id }} · {{ ucfirst($claim->status ?? 'pending') }}
-                        </span>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-
-                {{-- Actions --}}
-                <div class="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50">
-                    <a href="{{ route('employees.show', $employee) }}"
-                       class="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-800 transition">
-                        View Full Profile
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                        </svg>
-                    </a>
-                    <a href="{{ route('employees.edit', $employee) }}"
-                       class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition">
-                        Edit
-                    </a>
-                </div>
-            </div>
-        @endif
-
-        {{-- Empty / initial state --}}
-        @if(! $searched)
-            <div class="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
-                <svg class="mx-auto mb-3 w-12 h-12 text-slate-200" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0M9 14h.01M15 14h.01M9 10h6"/>
-                </svg>
-                <p class="font-medium text-slate-400">Enter a National ID above to search</p>
-            </div>
-        @endif
-    </div>
-
-</div>
+</div>{{-- /search-page-wrap --}}
 
 @endsection
+
+

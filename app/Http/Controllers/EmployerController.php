@@ -6,6 +6,8 @@ use App\Models\Employer;
 use App\Models\EmploymentRecord;
 use App\Models\AuditLog;
 use App\Http\Requests\StoreEmployerRequest;
+use App\Models\Claim;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
@@ -24,30 +26,41 @@ class EmployerController extends Controller
     // Show employer dashboard
     public function dashboard()
     {
-        $employer = Auth::user()->employer;
+        $stats = [
+            'total_employees'        => Employee::count(),
+            'verified_employees'     => Employee::where('status', 'verified')->count(),
+            'pending_employees'      => Employee::where('status', 'pending')->count(),
+            'total_employers'        => Employer::count(),
+            'verified_employers'     => Employer::where('status', 'verified')->count(),
+            'pending_employers'      => Employer::where('status', 'pending')->count(),
+            'active_employment'      => EmploymentRecord::whereNull('end_date')->count(),
+            'total_claims'         => Claim::count(),
+        ];
 
-        if (!$employer) {
-            return redirect()->route('employer.register');
-        }
-
-        if ($employer->verification_status === 'pending') {
-            return redirect()->route('employer.pending');
-        }
-
-        $recentRecords = \App\Models\EmploymentRecord::where('employer_id', $employer->id)
-            ->with(['employee'])
+        $recentEmployees = Employee::with('user')
             ->latest()
-            ->take(10)
+            ->limit(5)
             ->get();
 
-        $stats = [
-            'active_employees'    => \App\Models\EmploymentRecord::where('employer_id', $employer->id)
-                ->where('is_current', true)->count(),
-            'total_records'       => \App\Models\EmploymentRecord::where('employer_id', $employer->id)->count(),
-            'searches_this_month' => \App\Models\VerificationRequest::where('employer_id', $employer->id)
-                ->whereMonth('searched_at', now()->month)->count(),
-            'searches_remaining'  => $employer->remaining_search_quota,
-        ];
+        $recentEmployers = Employer::with('user')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $activityLog = ActivityLog::with('user')
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        // Registrations per month (last 6 months) for chart
+        $employeeChart = Employee::select(
+                DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"),
+                DB::raw('COUNT(*) as total')
+            )
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('created_at')
+            ->pluck('total', 'month');
 
         return view('employers.dashboard', compact('employer', 'recentRecords', 'stats'));
     }
