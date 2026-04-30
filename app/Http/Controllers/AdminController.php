@@ -8,6 +8,7 @@ use App\Models\ProfessionalFeedback;
 use App\Models\EmploymentRecord;
 use App\Models\VerificationRequest;
 use App\Models\AuditLog;
+use App\Models\Claim;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
@@ -32,10 +33,8 @@ class AdminController extends Controller
             'pending_employers'   => Employer::where('verification_status', 'pending')->count(),
             'verified_employers'  => Employer::where('verification_status', 'verified')->count(),
             'total_records'       => EmploymentRecord::count(),
-            'total_feedback'      => ProfessionalFeedback::count(),
-            'pending_moderation'  => ProfessionalFeedback::where('moderation_status', 'pending')->count(),
-            'searches_today'      => VerificationRequest::whereDate('searched_at', today())->count(),
-            'searches_this_month' => VerificationRequest::whereMonth('searched_at', now()->month)->count(),
+            'total_feedback'      => Claim::count(),
+            'pending_moderation'  => Claim::where('moderation_status', 'pending')->count(),
         ];
 
         $pendingEmployers = Employer::where('verification_status', 'pending')
@@ -44,7 +43,7 @@ class AdminController extends Controller
             ->take(10)
             ->get();
 
-        $pendingFeedback = ProfessionalFeedback::where('moderation_status', 'pending')
+        $pendingFeedback = Claim::where('moderation_status', 'pending')
             ->with(['employee', 'employer'])
             ->latest()
             ->take(10)

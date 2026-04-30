@@ -8,6 +8,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\GovernmentController;
 
@@ -22,12 +23,14 @@ Auth::routes(['verify' => true]);
 // ── Employee Routes ──────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
+    Route::get('/employee/dashboard', [DashboardController::class, 'employee'])
         ->name('employee.dashboard');
 
     Route::get('/get/employee/records', [EmployeeDashboardController::class, 'records'])
         ->name('employee.records.index');
 
+    Route::get('/employee/claim', [EmployeeDashboardController::class, 'createClaim'])
+        ->name('employee.claims.create');
     Route::post('/employee/claim', [EmployeeDashboardController::class, 'storeClaim'])
         ->name('employee.claim.store');
 
@@ -50,7 +53,7 @@ Route::resource('employees', EmployeeController::class);
 // ── Employer Routes ──────────────────────────────────────────
 Route::prefix('employer')->name('employer.')->middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard',  [EmployerController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard',  [DashboardController::class, 'employer'])->name('dashboard');
     Route::get('/register',   [EmployerController::class, 'create'])->name('register');
     Route::post('/register',  [EmployerController::class, 'store'])->name('store');
     Route::get('/pending',    [EmployerController::class, 'pending'])->name('pending');
@@ -72,7 +75,7 @@ Route::prefix('employer')->name('employer.')->middleware(['auth'])->group(functi
 // ── Admin Routes ─────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard',  [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard',  [DashboardController::class, 'admin'])->name('dashboard');
     Route::get('/statistics', [AdminController::class, 'statistics'])->name('statistics');
     Route::get('/audit-log',  [AdminController::class, 'auditLog'])->name('audit-log');
 

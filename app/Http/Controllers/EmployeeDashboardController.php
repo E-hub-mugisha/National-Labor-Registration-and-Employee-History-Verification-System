@@ -91,7 +91,7 @@ class EmployeeDashboardController extends Controller
             'employmentRecords.employer'
         ])->firstOrFail();
 
-        return view('employee.records.index', compact('employee'));
+        return view('employees.records.index', compact('employee'));
     }
 
 }
