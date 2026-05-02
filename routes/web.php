@@ -29,6 +29,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/get/employee/records', [EmployeeDashboardController::class, 'records'])
         ->name('employee.records.index');
+    Route::get('/get/employee/record/{id}', [EmployeeDashboardController::class, 'record'])
+        ->name('employee.records.show');
 
     Route::get('/employee/claim', [EmployeeDashboardController::class, 'createClaim'])
         ->name('employee.claims.create');
@@ -129,7 +131,7 @@ Route::prefix('employees/{employee}')
                 [EmploymentRecordController::class, 'destroy']
             )->name('destroy');
         });
-        
+
 // ── Government Routes ─────────────────────────────────────────
 Route::prefix('gov')->name('gov.')->middleware(['auth'])->group(function () {
 

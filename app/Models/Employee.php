@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Employee extends Model
 {
@@ -33,9 +34,11 @@ class Employee extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'skills'        => 'array',   // cast JSON column → array automatically
     ];
 
     // ── Accessors ──────────────────────────────────────────────────────────────
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
@@ -46,63 +49,88 @@ class Employee extends Model
         return $this->date_of_birth->age;
     }
 
-    public function getStatusBadgeAttribute(): string
+    /**
+     * Returns a Bootstrap badge class instead of Tailwind.
+     * Kept lean — no CSS framework logic in the model.
+     * Use $employee->statusBadge in Blade.
+     */
+    public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'active'      => 'bg-emerald-100 text-emerald-800',
-            'unemployed'  => 'bg-gray-100 text-gray-800',
-            'blacklisted' => 'bg-red-100 text-red-800',
-            default       => 'bg-gray-100 text-gray-800',
+            'active'      => 'success',
+            'unemployed'  => 'secondary',
+            'blacklisted' => 'danger',
+            default       => 'secondary',
         };
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────────
+
     public function scopeActive($q)
     {
         return $q->where('status', 'active');
     }
+
     public function scopeUnemployed($q)
     {
         return $q->where('status', 'unemployed');
     }
 
     // ── Relationships ──────────────────────────────────────────────────────────
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 
-    public function currentEmployer()
+    /**
+     * FIXED: was belongsTo(User::class) but the controller calls
+     * $employee->user()->create([...]) which only works on hasOne/hasMany.
+     * The users table must have an `employee_id` foreign key column.
+     */
+    // ✅ To this
+public function user(): BelongsTo
+{
+    return $this->belongsTo(User::class);
+}
+
+    public function currentEmployer(): BelongsTo
     {
         return $this->belongsTo(Employer::class, 'current_employer_id');
     }
 
-    public function employmentRecords()
+    public function employmentRecords(): HasMany
     {
         return $this->hasMany(EmploymentRecord::class)->orderBy('start_date', 'desc');
     }
 
-    public function activeEmploymentRecord()
+    /**
+     * The currently active employment record (no end date).
+     */
+    public function activeEmploymentRecord(): HasOne
     {
-        return $this->hasOne(EmploymentRecord::class)->whereNull('end_date')->latest('start_date');
+        return $this->hasOne(EmploymentRecord::class)
+                    ->whereNull('end_date')
+                    ->latestOfMany('start_date');
     }
 
-    public function claims()
+    public function claims(): HasMany
     {
         return $this->hasMany(Claim::class);
     }
 
-    public function transferRequests()
+    public function transferRequests(): HasMany
     {
         return $this->hasMany(TransferRequest::class);
     }
 
-    public function pendingTransferRequest()
+    /**
+     * The single pending transfer request (if any).
+     */
+    public function pendingTransferRequest(): HasOne
     {
-        return $this->hasOne(TransferRequest::class)->where('status', 'pending')->latest();
+        return $this->hasOne(TransferRequest::class)
+                    ->where('status', 'pending')
+                    ->latestOfMany();
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────
+
     public function isCurrentlyEmployedAt(Employer $employer): bool
     {
         return $this->current_employer_id === $employer->id;

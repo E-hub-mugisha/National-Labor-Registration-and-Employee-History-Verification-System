@@ -364,7 +364,7 @@
                 </tr>
             </thead>
             <tbody>
-            @forelse($employee->employmentRecords as $record)
+            @forelse($employmentRecords as $record)
                 <tr>
                     {{-- Employer --}}
                     <td>

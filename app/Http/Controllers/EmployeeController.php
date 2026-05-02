@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Employer;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -19,10 +21,10 @@ class EmployeeController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('first_name',  'like', "%{$s}%")
-                  ->orWhere('last_name',  'like', "%{$s}%")
-                  ->orWhere('national_id','like', "%{$s}%")
-                  ->orWhere('email',      'like', "%{$s}%")
-                  ->orWhere('phone',      'like', "%{$s}%");
+                    ->orWhere('last_name',  'like', "%{$s}%")
+                    ->orWhere('national_id', 'like', "%{$s}%")
+                    ->orWhere('email',      'like', "%{$s}%")
+                    ->orWhere('phone',      'like', "%{$s}%");
             });
         }
 
@@ -48,16 +50,25 @@ class EmployeeController extends Controller
         return view('employees.create', compact('employers'));
     }
 
-    // ── Store ──────────────────────────────────────────────────────────────────
     public function store(Request $request)
     {
-        $data = $request->validate($this->rules());
+        $employer = auth()->user()->employer;
+        $data     = $request->validate($this->rules());
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('employees/photos', 'public');
         }
 
-        $employee = Employee::create($data);
+        $user = User::create([
+            'name'     => $data['first_name'] . ' ' . $data['last_name'],
+            'email'    => $data['email'],
+            'password' => Hash::make('passwordEmployee12'),
+        ]);
+
+        $employee = new Employee($data);
+        $employee->user()->associate($user);          // sets user_id on employee
+        $employee->currentEmployer()->associate($employer);
+        $employee->save();
 
         return redirect()
             ->route('employees.show', $employee)
@@ -137,23 +148,31 @@ class EmployeeController extends Controller
     private function rules(?int $ignoreId = null): array
     {
         return [
-            'national_id'          => ['required', 'string', 'max:20',
-                                        Rule::unique('employees', 'national_id')->ignore($ignoreId)],
+            'national_id'          => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('employees', 'national_id')->ignore($ignoreId)
+            ],
             'first_name'           => ['required', 'string', 'max:100'],
             'last_name'            => ['required', 'string', 'max:100'],
             'middle_name'          => ['nullable', 'string', 'max:100'],
             'date_of_birth'        => ['required', 'date', 'before:today'],
             'gender'               => ['required', Rule::in(['male', 'female', 'other'])],
             'phone'                => ['required', 'string', 'max:20'],
-            'email'                => ['required', 'email', 'max:191',
-                                        Rule::unique('employees', 'email')->ignore($ignoreId)],
+            'email'                => [
+                'required',
+                'email',
+                'max:191',
+                Rule::unique('employees', 'email')->ignore($ignoreId)
+            ],
             'district'             => ['nullable', 'string', 'max:100'],
             'province'             => ['nullable', 'string', 'max:100'],
             'photo'                => ['nullable', 'image', 'max:2048'],
             'current_employer_id'  => ['nullable', 'exists:employers,id'],
             'status'               => ['required', Rule::in(['active', 'unemployed', 'blacklisted'])],
             'skills'               => ['nullable', 'string'],
-            'highest_qualification'=> ['nullable', 'string', 'max:191'],
+            'highest_qualification' => ['nullable', 'string', 'max:191'],
         ];
     }
 }
