@@ -243,6 +243,10 @@
                 <i class="bi bi-trash3"></i> Delete
             </button>
         </form>
+        <!-- view employment records -->
+        <a href="{{ route('employment-records.index', $employee) }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
+            <i class="bi bi-briefcase"></i> Employment Records
+        </a>
     </div>
 </div>
 

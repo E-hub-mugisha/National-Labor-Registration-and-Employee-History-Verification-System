@@ -43,15 +43,15 @@ class EmploymentRecord extends Model
     }
 
     public function getDurationAttribute(): string
-    {
-        $end = $this->end_date ?? now()->toDateObject();
-        $diff = $this->start_date->diff($end);
-        $parts = [];
-        if ($diff->y) $parts[] = "{$diff->y}y";
-        if ($diff->m) $parts[] = "{$diff->m}m";
-        if (!$diff->y && !$diff->m) $parts[] = "{$diff->d}d";
-        return implode(' ', $parts) ?: '< 1 day';
-    }
+{
+    $end = $this->end_date ?? now();
+    $diff = $this->start_date->diff($end);
+    $parts = [];
+    if ($diff->y) $parts[] = "{$diff->y}y";
+    if ($diff->m) $parts[] = "{$diff->m}m";
+    if (!$diff->y && !$diff->m) $parts[] = "{$diff->d}d";
+    return implode(' ', $parts) ?: '< 1 day';
+}
 
     public function getConductBadgeAttribute(): string
     {

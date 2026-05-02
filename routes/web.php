@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
+use App\Http\Controllers\EmploymentRecordController;
 use App\Http\Controllers\GovernmentController;
 
 // ── Public Routes ────────────────────────────────────────────
@@ -70,6 +71,8 @@ Route::prefix('employer')->name('employer.')->middleware(['auth'])->group(functi
     Route::get('/verify',                    [VerificationController::class, 'index'])->name('verify.index');
     Route::post('/verify/search',            [VerificationController::class, 'search'])->name('verify.search');
     Route::get('/verify/profile/{employee}', [VerificationController::class, 'show'])->name('verify.profile');
+
+    
 });
 
 // ── Admin Routes ─────────────────────────────────────────────
@@ -93,6 +96,40 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::patch('/feedback/{feedback}/moderate',    [AdminController::class, 'moderateFeedback'])->name('feedback.moderate');
 });
 
+Route::prefix('employees/{employee}')
+        ->name('employment-records.')
+        ->group(function () {
+            Route::get(
+                'employment-records',
+                [EmploymentRecordController::class, 'index']
+            )->name('index');
+
+            Route::post(
+                'employment-records',
+                [EmploymentRecordController::class, 'store']
+            )->name('store');
+
+            Route::get(
+                'employment-records/{employmentRecord}',
+                [EmploymentRecordController::class, 'show']
+            )->name('show');
+
+            Route::get(
+                'employment-records/{employmentRecord}/edit',
+                [EmploymentRecordController::class, 'edit']
+            )->name('edit');
+
+            Route::put(
+                'employment-records/{employmentRecord}',
+                [EmploymentRecordController::class, 'update']
+            )->name('update');
+
+            Route::delete(
+                'employment-records/{employmentRecord}',
+                [EmploymentRecordController::class, 'destroy']
+            )->name('destroy');
+        });
+        
 // ── Government Routes ─────────────────────────────────────────
 Route::prefix('gov')->name('gov.')->middleware(['auth'])->group(function () {
 
