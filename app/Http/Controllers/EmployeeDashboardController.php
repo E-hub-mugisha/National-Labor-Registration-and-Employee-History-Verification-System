@@ -53,6 +53,17 @@ class EmployeeDashboardController extends Controller
         return view('employees.records.index', compact('employee', 'employmentRecords'));
     }
 
+    // ── show details
+    public function showRecord($id)
+    {
+        $employee = auth()->user()->employee;
+        $employmentRecord = EmploymentRecord::where('id', $id)
+            ->where('employee_id', $employee->id)
+            ->firstOrFail();
+
+        return view('employees.records.show', compact('employee', 'employmentRecord'));
+    }
+
     // ── Accept / verify an employment record ──────────────────────────────────
 
     public function acceptRecord(Request $request)
@@ -114,5 +125,13 @@ class EmployeeDashboardController extends Controller
         ]);
 
         return back()->with('success', 'Claim submitted successfully.');
+    }
+
+    // show employee details
+    public function showEmployee()
+    {
+        $employee = auth()->user()->employee;
+
+        return view('employees.show', compact('employee'));
     }
 }

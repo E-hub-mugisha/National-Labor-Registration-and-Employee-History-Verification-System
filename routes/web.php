@@ -29,7 +29,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/get/employee/records', [EmployeeDashboardController::class, 'records'])
         ->name('employee.records.index');
-    Route::get('/get/employee/record/{id}', [EmployeeDashboardController::class, 'record'])
+    Route::get('/get/employee/record/{id}', [EmployeeDashboardController::class, 'showRecord'])
         ->name('employee.records.show');
 
     Route::get('/employee/claim', [EmployeeDashboardController::class, 'createClaim'])
@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/employee/record/accept', [EmployeeDashboardController::class, 'acceptRecord'])
         ->name('employee.record.accept');
 
-    Route::get('/employee/profile', [EmployeeDashboardController::class, 'showProfile'])
+    Route::get('/employee/profile', [EmployeeDashboardController::class, 'showEmployee'])
         ->name('employee.profile');
 
     Route::get('/employee/feedback', [EmployeeDashboardController::class, 'showFeedback'])

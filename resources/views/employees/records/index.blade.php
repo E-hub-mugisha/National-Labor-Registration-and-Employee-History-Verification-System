@@ -430,6 +430,10 @@
                                     onclick="openClaimModal({{ $record->id }}, '{{ addslashes($record->employer->name ?? 'Unknown') }}', '{{ addslashes($record->position) }}')">
                                 <i class="bi bi-flag"></i> Claim
                             </button>
+                            <!-- view details -->
+                            <a href="{{ route('employee.records.show', $record->id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> View
+                            </a>
                         </div>
                     </td>
                 </tr>

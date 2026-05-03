@@ -411,7 +411,7 @@ textarea.form-control { resize: vertical; min-height: 108px; }
 
     {{-- ── Hero Card ──────────────────────────────────────── --}}
     @php
-        $initials = strtoupper(substr($record->employer->name ?? '?', 0, 2));
+        $initials = strtoupper(substr($employmentRecord->employer->name ?? '?', 0, 2));
         $conductMap = [
             'excellent'    => ['class' => 'bp-excellent', 'label' => 'Excellent'],
             'good'         => ['class' => 'bp-good',      'label' => 'Good'],
@@ -419,36 +419,36 @@ textarea.form-control { resize: vertical; min-height: 108px; }
             'poor'         => ['class' => 'bp-poor',      'label' => 'Poor'],
             'very_poor'    => ['class' => 'bp-very_poor', 'label' => 'Very Poor'],
         ];
-        $conduct = $conductMap[$record->conduct_rating] ?? null;
+        $conduct = $conductMap[$employmentRecord->conduct_rating] ?? null;
     @endphp
 
     <div class="hero-card">
         <div class="hero-inner">
             <div class="hero-logo">{{ $initials }}</div>
             <div>
-                <div class="hero-employer">{{ $record->employer->name ?? 'Unknown Employer' }}</div>
-                <div class="hero-position">{{ $record->position }}@if($record->department) &middot; {{ $record->department }}@endif</div>
+                <div class="hero-employer">{{ $employmentRecord->employer->name ?? 'Unknown Employer' }}</div>
+                <div class="hero-position">{{ $employmentRecord->position }}@if($employmentRecord->department) &middot; {{ $employmentRecord->department }}@endif</div>
                 <div class="hero-meta">
                     <span>
                         <i class="bi bi-calendar3"></i>
-                        {{ $record->start_date->format('d M Y') }}
+                        {{ $employmentRecord->start_date->format('d M Y') }}
                         →
-                        {{ $record->end_date ? $record->end_date->format('d M Y') : 'Present' }}
+                        {{ $employmentRecord->end_date ? $employmentRecord->end_date->format('d M Y') : 'Present' }}
                     </span>
                     <span>
                         <i class="bi bi-clock"></i>
-                        {{ $record->duration }}
+                        {{ $employmentRecord->duration }}
                     </span>
-                    @if($record->salary)
+                    @if($employmentRecord->salary)
                         <span>
                             <i class="bi bi-cash"></i>
-                            {{ number_format($record->salary, 2) }}
+                            {{ number_format($employmentRecord->salary, 2) }}
                         </span>
                     @endif
                 </div>
             </div>
             <div class="hero-badges">
-                @if($record->is_active)
+                @if($employmentRecord->is_active)
                     <span class="badge-pill" style="background:rgba(5,150,105,.2);color:#6ee7b7;border:1px solid rgba(5,150,105,.3)">
                         <i class="bi bi-circle-fill" style="font-size:6px"></i> Active
                     </span>
@@ -457,7 +457,7 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                         <i class="bi bi-circle" style="font-size:8px"></i> Ended
                     </span>
                 @endif
-                @if($record->employee_verified)
+                @if($employmentRecord->employee_verified)
                     <span class="badge-pill bp-verified">
                         <i class="bi bi-shield-fill-check" style="font-size:10px"></i> Verified
                     </span>
@@ -491,21 +491,21 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                     <div class="detail-grid">
                         <div class="detail-item">
                             <div class="detail-label">Position</div>
-                            <div class="detail-val big">{{ $record->position }}</div>
+                            <div class="detail-val big">{{ $employmentRecord->position }}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Department</div>
-                            <div class="detail-val">{{ $record->department ?? '—' }}</div>
+                            <div class="detail-val">{{ $employmentRecord->department ?? '—' }}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Start Date</div>
-                            <div class="detail-val">{{ $record->start_date->format('d F Y') }}</div>
+                            <div class="detail-val">{{ $employmentRecord->start_date->format('d F Y') }}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">End Date</div>
                             <div class="detail-val">
-                                @if($record->end_date)
-                                    {{ $record->end_date->format('d F Y') }}
+                                @if($employmentRecord->end_date)
+                                    {{ $employmentRecord->end_date->format('d F Y') }}
                                 @else
                                     <span class="badge-pill bp-active" style="font-size:11px;padding:2px 9px">
                                         <i class="bi bi-circle-fill" style="font-size:6px"></i> Currently Active
@@ -515,20 +515,20 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Duration</div>
-                            <div class="detail-val">{{ $record->duration }}</div>
+                            <div class="detail-val">{{ $employmentRecord->duration }}</div>
                         </div>
-                        @if($record->salary)
+                        @if($employmentRecord->salary)
                         <div class="detail-item">
                             <div class="detail-label">Salary</div>
-                            <div class="detail-val">{{ number_format($record->salary, 2) }}</div>
+                            <div class="detail-val">{{ number_format($employmentRecord->salary, 2) }}</div>
                         </div>
                         @endif
                         <div class="detail-item">
                             <div class="detail-label">Eligible for Rehire</div>
                             <div class="detail-val">
-                                @if(is_null($record->eligible_for_rehire))
+                                @if(is_null($employmentRecord->eligible_for_rehire))
                                     <span style="color:var(--ink-3)">—</span>
-                                @elseif($record->eligible_for_rehire)
+                                @elseif($employmentRecord->eligible_for_rehire)
                                     <span class="rehire-yes"><i class="bi bi-check-circle-fill me-1"></i>Yes</span>
                                 @else
                                     <span class="rehire-no"><i class="bi bi-x-circle-fill me-1"></i>No</span>
@@ -538,7 +538,7 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                         <div class="detail-item">
                             <div class="detail-label">Record Status</div>
                             <div class="detail-val">
-                                @if($record->employee_verified)
+                                @if($employmentRecord->employee_verified)
                                     <span class="badge-pill bp-verified">
                                         <i class="bi bi-shield-fill-check" style="font-size:10px"></i> Employee Verified
                                     </span>
@@ -554,7 +554,7 @@ textarea.form-control { resize: vertical; min-height: 108px; }
             </div>
 
             {{-- Exit Information --}}
-            @if(!$record->is_active)
+            @if(!$employmentRecord->is_active)
             <div class="panel">
                 <div class="panel-head">
                     <div class="panel-icon pi-amber"><i class="bi bi-box-arrow-right"></i></div>
@@ -564,12 +564,12 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                     <div class="detail-grid">
                         <div class="detail-item">
                             <div class="detail-label">Exit Reason</div>
-                            <div class="detail-val big">{{ $record->exitReasonLabel }}</div>
+                            <div class="detail-val big">{{ $employmentRecord->exitReasonLabel }}</div>
                         </div>
-                        @if($record->exit_details)
+                        @if($employmentRecord->exit_details)
                         <div class="detail-item" style="grid-column:1/-1">
                             <div class="detail-label">Exit Details</div>
-                            <div class="detail-val">{{ $record->exit_details }}</div>
+                            <div class="detail-val">{{ $employmentRecord->exit_details }}</div>
                         </div>
                         @endif
                     </div>
@@ -599,10 +599,10 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                             </div>
                         </div>
                     </div>
-                    @if($record->conduct_remarks)
+                    @if($employmentRecord->conduct_remarks)
                         <div style="margin-top:16px">
                             <div class="detail-label" style="margin-bottom:8px">Conduct Remarks</div>
-                            <div class="remarks-block">"{{ $record->conduct_remarks }}"</div>
+                            <div class="remarks-block">"{{ $employmentRecord->conduct_remarks }}"</div>
                         </div>
                     @endif
                 </div>
@@ -613,20 +613,20 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                 <div class="panel-head">
                     <div class="panel-icon pi-rose"><i class="bi bi-flag"></i></div>
                     <span class="panel-title">Claims on This Record</span>
-                    @if($record->claims->count() > 0)
+                    @if($employmentRecord->claims->count() > 0)
                         <span class="badge-pill bp-rejected ms-auto" style="font-size:11px;padding:2px 9px">
-                            {{ $record->claims->count() }} claim{{ $record->claims->count() > 1 ? 's' : '' }}
+                            {{ $employmentRecord->claims->count() }} claim{{ $employmentRecord->claims->count() > 1 ? 's' : '' }}
                         </span>
                     @endif
                 </div>
                 <div class="panel-body">
-                    @if($record->claims->isEmpty())
+                    @if($employmentRecord->claims->isEmpty())
                         <div style="text-align:center;padding:20px 0;color:var(--ink-3);font-size:13.5px;">
                             <i class="bi bi-flag" style="font-size:22px;display:block;margin-bottom:8px;opacity:.3"></i>
                             No claims filed on this record.
                         </div>
                     @else
-                        @foreach($record->claims as $claim)
+                        @foreach($employmentRecord->claims as $claim)
                             @php
                                 $statusMap = [
                                     'pending'      => ['class' => 'bp-pending',  'icon' => 'bi-clock',       'label' => 'Pending'],
@@ -670,10 +670,10 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                     <span class="panel-title">Actions</span>
                 </div>
                 <div class="panel-body">
-                    @if(!$record->employee_verified)
+                    @if(!$employmentRecord->employee_verified)
                         <form method="POST" action="{{ route('employee.record.accept') }}" class="mb-2">
                             @csrf
-                            <input type="hidden" name="employment_record_id" value="{{ $record->id }}">
+                            <input type="hidden" name="employment_record_id" value="{{ $employmentRecord->id }}">
                             <button type="submit" class="btn-accept-main">
                                 <i class="bi bi-shield-check"></i> Verify This Record
                             </button>
@@ -700,20 +700,20 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                     <div style="display:flex;flex-direction:column;gap:14px">
                         <div>
                             <div class="detail-label">Record ID</div>
-                            <div class="detail-val" style="font-family:monospace;font-size:13px">#{{ str_pad($record->id, 5, '0', STR_PAD_LEFT) }}</div>
+                            <div class="detail-val" style="font-family:monospace;font-size:13px">#{{ str_pad($employmentRecord->id, 5, '0', STR_PAD_LEFT) }}</div>
                         </div>
                         <div>
                             <div class="detail-label">Created</div>
-                            <div class="detail-val">{{ $record->created_at->format('d M Y') }}</div>
+                            <div class="detail-val">{{ $employmentRecord->created_at->format('d M Y') }}</div>
                         </div>
                         <div>
                             <div class="detail-label">Last Updated</div>
-                            <div class="detail-val">{{ $record->updated_at->diffForHumans() }}</div>
+                            <div class="detail-val">{{ $employmentRecord->updated_at->diffForHumans() }}</div>
                         </div>
-                        @if($record->recordedBy)
+                        @if($employmentRecord->recordedBy)
                         <div>
                             <div class="detail-label">Recorded By</div>
-                            <div class="detail-val">{{ $record->recordedBy->name }}</div>
+                            <div class="detail-val">{{ $employmentRecord->recordedBy->name }}</div>
                         </div>
                         @endif
                     </div>
@@ -737,7 +737,7 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                     <div>
                         <div class="modal-title">File a Claim</div>
                         <div class="modal-subtitle">
-                            {{ $record->employer->name ?? 'Unknown' }} &middot; {{ $record->position }}
+                            {{ $employmentRecord->employer->name ?? 'Unknown' }} &middot; {{ $employmentRecord->position }}
                         </div>
                     </div>
                 </div>
@@ -759,7 +759,7 @@ textarea.form-control { resize: vertical; min-height: 108px; }
                       enctype="multipart/form-data"
                       id="claimForm">
                     @csrf
-                    <input type="hidden" name="employment_record_id" value="{{ $record->id }}">
+                    <input type="hidden" name="employment_record_id" value="{{ $employmentRecord->id }}">
 
                     <div class="mb-3">
                         <label class="form-label">Issue Type</label>
