@@ -84,10 +84,10 @@ class Employee extends Model
      * The users table must have an `employee_id` foreign key column.
      */
     // ✅ To this
-public function user(): BelongsTo
-{
-    return $this->belongsTo(User::class);
-}
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function currentEmployer(): BelongsTo
     {
@@ -105,8 +105,8 @@ public function user(): BelongsTo
     public function activeEmploymentRecord(): HasOne
     {
         return $this->hasOne(EmploymentRecord::class)
-                    ->whereNull('end_date')
-                    ->latestOfMany('start_date');
+            ->whereNull('end_date')
+            ->latestOfMany('start_date');
     }
 
     public function claims(): HasMany
@@ -125,8 +125,8 @@ public function user(): BelongsTo
     public function pendingTransferRequest(): HasOne
     {
         return $this->hasOne(TransferRequest::class)
-                    ->where('status', 'pending')
-                    ->latestOfMany();
+            ->where('status', 'pending')
+            ->latestOfMany();
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────

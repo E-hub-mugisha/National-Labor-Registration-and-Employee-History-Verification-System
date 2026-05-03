@@ -104,7 +104,7 @@
 
     {{-- Main content --}}
     <main>
-        {{ $slot }}
+        @yield('content')
     </main>
 
     {{-- Footer --}}

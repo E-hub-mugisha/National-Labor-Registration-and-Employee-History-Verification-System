@@ -70,7 +70,10 @@
     }
 
     /* ── Monospace for National ID ── */
-    .font-mono { font-family: 'DM Mono', monospace; letter-spacing: .03em; }
+    .font-mono {
+        font-family: 'DM Mono', monospace;
+        letter-spacing: .03em;
+    }
 
     /* ── Photo preview ── */
     .photo-preview-wrap {
@@ -182,14 +185,16 @@
         color: #92400E;
         opacity: .85;
         padding: .3rem 0;
-        border-bottom: 1px solid rgba(146,64,14,.1);
+        border-bottom: 1px solid rgba(146, 64, 14, .1);
         display: flex;
         gap: .5rem;
         align-items: flex-start;
         line-height: 1.4;
     }
 
-    .tips-list li:last-child { border-bottom: none; }
+    .tips-list li:last-child {
+        border-bottom: none;
+    }
 
     .tips-list li::before {
         content: '·';
@@ -218,7 +223,7 @@
 
     .form-control.is-invalid:focus,
     .form-select.is-invalid:focus {
-        box-shadow: 0 0 0 3px rgba(220,38,38,.12);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
     }
 
     .invalid-feedback {
@@ -245,8 +250,8 @@
 </div>
 
 <form method="POST"
-      action="{{ $isEdit ? route('employees.update', $employee) : route('employees.store') }}"
-      enctype="multipart/form-data">
+    action="{{ $isEdit ? route('employees.update', $employee) : route('employees.store') }}"
+    enctype="multipart/form-data">
     @csrf
     @if($isEdit) @method('PUT') @endif
 
@@ -278,13 +283,13 @@
                                     <i class="bi bi-credit-card-2-front" style="font-size:.85rem;"></i>
                                 </span>
                                 <input type="text"
-                                       id="national_id"
-                                       name="national_id"
-                                       value="{{ old('national_id', $employee->national_id ?? '') }}"
-                                       placeholder="e.g. 1234567890123456"
-                                       class="form-control font-mono @error('national_id') is-invalid @enderror">
+                                    id="national_id"
+                                    name="national_id"
+                                    value="{{ old('national_id', $employee->national_id ?? '') }}"
+                                    placeholder="e.g. 1234567890123456"
+                                    class="form-control font-mono @error('national_id') is-invalid @enderror">
                                 @error('national_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -293,12 +298,12 @@
                         <div class="col-12 col-sm-6">
                             <label for="first_name" class="form-label">First Name <span class="req-star">*</span></label>
                             <input type="text"
-                                   id="first_name"
-                                   name="first_name"
-                                   value="{{ old('first_name', $employee->first_name ?? '') }}"
-                                   class="form-control @error('first_name') is-invalid @enderror">
+                                id="first_name"
+                                name="first_name"
+                                value="{{ old('first_name', $employee->first_name ?? '') }}"
+                                class="form-control @error('first_name') is-invalid @enderror">
                             @error('first_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -306,12 +311,12 @@
                         <div class="col-12 col-sm-6">
                             <label for="last_name" class="form-label">Last Name <span class="req-star">*</span></label>
                             <input type="text"
-                                   id="last_name"
-                                   name="last_name"
-                                   value="{{ old('last_name', $employee->last_name ?? '') }}"
-                                   class="form-control @error('last_name') is-invalid @enderror">
+                                id="last_name"
+                                name="last_name"
+                                value="{{ old('last_name', $employee->last_name ?? '') }}"
+                                class="form-control @error('last_name') is-invalid @enderror">
                             @error('last_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -322,12 +327,12 @@
                                 <span class="optional-tag">optional</span>
                             </label>
                             <input type="text"
-                                   id="middle_name"
-                                   name="middle_name"
-                                   value="{{ old('middle_name', $employee->middle_name ?? '') }}"
-                                   class="form-control @error('middle_name') is-invalid @enderror">
+                                id="middle_name"
+                                name="middle_name"
+                                value="{{ old('middle_name', $employee->middle_name ?? '') }}"
+                                class="form-control @error('middle_name') is-invalid @enderror">
                             @error('middle_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -335,12 +340,12 @@
                         <div class="col-12 col-sm-6">
                             <label for="date_of_birth" class="form-label">Date of Birth <span class="req-star">*</span></label>
                             <input type="date"
-                                   id="date_of_birth"
-                                   name="date_of_birth"
-                                   value="{{ old('date_of_birth', isset($employee->date_of_birth) ? $employee->date_of_birth->format('Y-m-d') : '') }}"
-                                   class="form-control @error('date_of_birth') is-invalid @enderror">
+                                id="date_of_birth"
+                                name="date_of_birth"
+                                value="{{ old('date_of_birth', isset($employee->date_of_birth) ? $employee->date_of_birth->format('Y-m-d') : '') }}"
+                                class="form-control @error('date_of_birth') is-invalid @enderror">
                             @error('date_of_birth')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -348,18 +353,18 @@
                         <div class="col-12 col-sm-6">
                             <label for="gender" class="form-label">Gender <span class="req-star">*</span></label>
                             <select id="gender"
-                                    name="gender"
-                                    class="form-select @error('gender') is-invalid @enderror">
+                                name="gender"
+                                class="form-select @error('gender') is-invalid @enderror">
                                 <option value="">Select gender…</option>
                                 @foreach(['male','female','other'] as $g)
-                                    <option value="{{ $g }}"
-                                        {{ old('gender', $employee->gender ?? '') === $g ? 'selected' : '' }}>
-                                        {{ ucfirst($g) }}
-                                    </option>
+                                <option value="{{ $g }}"
+                                    {{ old('gender', $employee->gender ?? '') === $g ? 'selected' : '' }}>
+                                    {{ ucfirst($g) }}
+                                </option>
                                 @endforeach
                             </select>
                             @error('gender')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -371,13 +376,13 @@
                                     <i class="bi bi-telephone" style="font-size:.85rem;"></i>
                                 </span>
                                 <input type="text"
-                                       id="phone"
-                                       name="phone"
-                                       value="{{ old('phone', $employee->phone ?? '') }}"
-                                       placeholder="+250 7XX XXX XXX"
-                                       class="form-control @error('phone') is-invalid @enderror">
+                                    id="phone"
+                                    name="phone"
+                                    value="{{ old('phone', $employee->phone ?? '') }}"
+                                    placeholder="+250 7XX XXX XXX"
+                                    class="form-control @error('phone') is-invalid @enderror">
                                 @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -390,13 +395,13 @@
                                     <i class="bi bi-envelope" style="font-size:.85rem;"></i>
                                 </span>
                                 <input type="email"
-                                       id="email"
-                                       name="email"
-                                       value="{{ old('email', $employee->email ?? '') }}"
-                                       placeholder="name@example.com"
-                                       class="form-control @error('email') is-invalid @enderror">
+                                    id="email"
+                                    name="email"
+                                    value="{{ old('email', $employee->email ?? '') }}"
+                                    placeholder="name@example.com"
+                                    class="form-control @error('email') is-invalid @enderror">
                                 @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -423,13 +428,13 @@
                                 <span class="optional-tag">optional</span>
                             </label>
                             <input type="text"
-                                   id="district"
-                                   name="district"
-                                   value="{{ old('district', $employee->district ?? '') }}"
-                                   placeholder="e.g. Gasabo"
-                                   class="form-control @error('district') is-invalid @enderror">
+                                id="district"
+                                name="district"
+                                value="{{ old('district', $employee->district ?? '') }}"
+                                placeholder="e.g. Gasabo"
+                                class="form-control @error('district') is-invalid @enderror">
                             @error('district')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -440,13 +445,13 @@
                                 <span class="optional-tag">optional</span>
                             </label>
                             <input type="text"
-                                   id="province"
-                                   name="province"
-                                   value="{{ old('province', $employee->province ?? '') }}"
-                                   placeholder="e.g. Kigali City"
-                                   class="form-control @error('province') is-invalid @enderror">
+                                id="province"
+                                name="province"
+                                value="{{ old('province', $employee->province ?? '') }}"
+                                placeholder="e.g. Kigali City"
+                                class="form-control @error('province') is-invalid @enderror">
                             @error('province')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -472,13 +477,13 @@
                                 <span class="optional-tag">optional</span>
                             </label>
                             <input type="text"
-                                   id="highest_qualification"
-                                   name="highest_qualification"
-                                   value="{{ old('highest_qualification', $employee->highest_qualification ?? '') }}"
-                                   placeholder="e.g. Bachelor of Science in Computer Science"
-                                   class="form-control @error('highest_qualification') is-invalid @enderror">
+                                id="highest_qualification"
+                                name="highest_qualification"
+                                value="{{ old('highest_qualification', $employee->highest_qualification ?? '') }}"
+                                placeholder="e.g. Bachelor of Science in Computer Science"
+                                class="form-control @error('highest_qualification') is-invalid @enderror">
                             @error('highest_qualification')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -489,13 +494,13 @@
                                 <span class="optional-tag">optional</span>
                             </label>
                             <textarea id="skills"
-                                      name="skills"
-                                      rows="4"
-                                      placeholder="List relevant skills, separated by commas or new lines…"
-                                      class="form-control @error('skills') is-invalid @enderror"
-                                      style="resize:vertical;">{{ old('skills', $employee->skills ?? '') }}</textarea>
+                                name="skills"
+                                rows="4"
+                                placeholder="List relevant skills, separated by commas or new lines…"
+                                class="form-control @error('skills') is-invalid @enderror"
+                                style="resize:vertical;">{{ old('skills', $employee->skills ?? '') }}</textarea>
                             @error('skills')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -503,6 +508,7 @@
                 </div>
             </div>
 
+            {{-- Card: Employment --}}
             {{-- Card: Employment --}}
             <div class="card mb-0">
                 <div class="card-header">
@@ -514,40 +520,69 @@
                 <div class="card-body">
                     <div class="row g-3">
 
-                        {{-- Current employer --}}
+                        {{-- Current Employer ──────────────────────────────────────── --}}
                         <div class="col-12 col-sm-6">
-                            <label for="current_employer_id" class="form-label">Current Employer</label>
+                            <label for="current_employer_id" class="form-label">
+                                Current Employer
+                                @if(in_array(auth()->user()->role, ['admin', 'government']))
+                                <span class="optional-tag">optional</span>
+                                @endif
+                            </label>
+
+                            @if(in_array(auth()->user()->role, ['admin', 'government']))
+                            {{-- Admin / Gov: free selection --}}
                             <select id="current_employer_id"
-                                    name="current_employer_id"
-                                    class="form-select @error('current_employer_id') is-invalid @enderror">
+                                name="current_employer_id"
+                                class="form-select @error('current_employer_id') is-invalid @enderror"
+                                onchange="syncStatusToEmployer(this)">
                                 <option value="">— None / Unemployed —</option>
                                 @foreach($employers as $employer)
-                                    <option value="{{ $employer->id }}"
-                                        {{ old('current_employer_id', $employee->current_employer_id ?? '') == $employer->id ? 'selected' : '' }}>
-                                        {{ $employer->name }}
-                                    </option>
+                                <option value="{{ $employer->id }}"
+                                    {{ old('current_employer_id', $employee->current_employer_id ?? '') == $employer->id ? 'selected' : '' }}>
+                                    {{ $employer->name }}
+                                </option>
                                 @endforeach
                             </select>
+                            <div class="form-hint">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Leave blank if the employee is currently unemployed.
+                            </div>
+
+                            @else
+                            {{-- Employer: locked to own company --}}
+                            <input type="hidden"
+                                name="current_employer_id"
+                                value="{{ auth()->user()->employer->id }}">
+                            <input type="text"
+                                class="form-control"
+                                value="{{ auth()->user()->employer->name }}"
+                                disabled>
+                            <div class="form-hint">
+                                <i class="bi bi-lock me-1"></i>
+                                Employees you register are automatically linked to your organisation.
+                            </div>
+                            @endif
+
                             @error('current_employer_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        {{-- Status --}}
+                        {{-- Status ──────────────────────────────────────────────────── --}}
                         <div class="col-12 col-sm-6">
                             <label for="status" class="form-label">Status <span class="req-star">*</span></label>
                             <select id="status"
-                                    name="status"
-                                    class="form-select @error('status') is-invalid @enderror">
+                                name="status"
+                                class="form-select @error('status') is-invalid @enderror">
                                 @foreach(['active','unemployed','blacklisted'] as $s)
-                                    <option value="{{ $s }}"
-                                        {{ old('status', $employee->status ?? 'unemployed') === $s ? 'selected' : '' }}>
-                                        {{ ucfirst($s) }}
-                                    </option>
+                                <option value="{{ $s }}"
+                                    {{ old('status', $employee->status ?? 'unemployed') === $s ? 'selected' : '' }}>
+                                    {{ ucfirst($s) }}
+                                </option>
                                 @endforeach
                             </select>
                             @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <div class="form-hint">
                                 <i class="bi bi-info-circle me-1"></i>
@@ -558,6 +593,30 @@
                     </div>
                 </div>
             </div>
+
+            <script>
+                /**
+                 * When admin/gov changes the employer dropdown, auto-set a sensible
+                 * default status (active if an employer is chosen, unemployed if blank).
+                 * The user can still override manually.
+                 */
+                function syncStatusToEmployer(select) {
+                    const statusSelect = document.getElementById('status');
+                    if (!statusSelect) return;
+
+                    if (select.value) {
+                        // An employer was chosen → default to active
+                        if (statusSelect.value === 'unemployed') {
+                            statusSelect.value = 'active';
+                        }
+                    } else {
+                        // Cleared → default to unemployed
+                        if (statusSelect.value === 'active') {
+                            statusSelect.value = 'unemployed';
+                        }
+                    }
+                }
+            </script>
 
         </div>
 
@@ -579,18 +638,18 @@
                     {{-- Avatar preview --}}
                     <div class="photo-preview-wrap mx-auto mb-3" id="photo-wrap">
                         @if($isEdit && $employee->photo)
-                            <img id="preview-img"
-                                 src="{{ Storage::url($employee->photo) }}"
-                                 alt="Profile photo"
-                                 class="photo-preview-img">
-                            <div id="preview-placeholder" class="photo-preview-placeholder d-none">
-                                <i class="bi bi-person" style="font-size:2.5rem;color:var(--slate-400);"></i>
-                            </div>
+                        <img id="preview-img"
+                            src="{{ Storage::url($employee->photo) }}"
+                            alt="Profile photo"
+                            class="photo-preview-img">
+                        <div id="preview-placeholder" class="photo-preview-placeholder d-none">
+                            <i class="bi bi-person" style="font-size:2.5rem;color:var(--slate-400);"></i>
+                        </div>
                         @else
-                            <img id="preview-img" src="" alt="" class="photo-preview-img d-none">
-                            <div id="preview-placeholder" class="photo-preview-placeholder">
-                                <i class="bi bi-person" style="font-size:2.5rem;color:var(--slate-400);"></i>
-                            </div>
+                        <img id="preview-img" src="" alt="" class="photo-preview-img d-none">
+                        <div id="preview-placeholder" class="photo-preview-placeholder">
+                            <i class="bi bi-person" style="font-size:2.5rem;color:var(--slate-400);"></i>
+                        </div>
                         @endif
                     </div>
 
@@ -600,17 +659,17 @@
                         <div class="upload-zone-label">Click to upload photo</div>
                         <div class="upload-zone-hint">JPG, PNG or WEBP · Max 2 MB</div>
                         <input type="file"
-                               id="photo"
-                               name="photo"
-                               accept="image/*"
-                               class="d-none"
-                               onchange="previewPhoto(this)">
+                            id="photo"
+                            name="photo"
+                            accept="image/*"
+                            class="d-none"
+                            onchange="previewPhoto(this)">
                     </label>
 
                     @error('photo')
-                        <div class="text-danger mt-2" style="font-size:.78rem;">
-                            <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
-                        </div>
+                    <div class="text-danger mt-2" style="font-size:.78rem;">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
+                    </div>
                     @enderror
 
                 </div>
@@ -641,7 +700,7 @@
     {{-- ── Form Actions ──────────────────────────────────────────────────── --}}
     <div class="form-actions-bar mt-4">
         <a href="{{ $isEdit ? route('employees.show', $employee) : route('employees.index') }}"
-           class="btn btn-outline-secondary">
+            class="btn btn-outline-secondary">
             <i class="bi bi-x-lg me-1"></i> Cancel
         </a>
         <button type="submit" class="btn btn-success px-4">
@@ -658,7 +717,7 @@
 
 <script>
     function previewPhoto(input) {
-        const img         = document.getElementById('preview-img');
+        const img = document.getElementById('preview-img');
         const placeholder = document.getElementById('preview-placeholder');
 
         if (input.files && input.files[0]) {
@@ -678,18 +737,18 @@
     zone?.addEventListener('dragover', e => {
         e.preventDefault();
         zone.style.borderColor = 'var(--navy-500)';
-        zone.style.background  = 'var(--blue-100)';
+        zone.style.background = 'var(--blue-100)';
     });
 
     zone?.addEventListener('dragleave', () => {
         zone.style.borderColor = '';
-        zone.style.background  = '';
+        zone.style.background = '';
     });
 
     zone?.addEventListener('drop', e => {
         e.preventDefault();
         zone.style.borderColor = '';
-        zone.style.background  = '';
+        zone.style.background = '';
         const fileInput = document.getElementById('photo');
         if (e.dataTransfer.files.length) {
             fileInput.files = e.dataTransfer.files;

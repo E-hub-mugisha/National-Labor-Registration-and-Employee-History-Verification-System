@@ -8,11 +8,13 @@ use App\Models\AuditLog;
 use App\Http\Requests\StoreEmployerRequest;
 use App\Models\Claim;
 use App\Models\Employee;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class EmployerController extends Controller
 {
@@ -26,49 +28,35 @@ class EmployerController extends Controller
     // Show employer dashboard
     public function dashboard()
     {
-        $stats = [
-            'total_employees'        => Employee::count(),
-            'verified_employees'     => Employee::where('status', 'verified')->count(),
-            'pending_employees'      => Employee::where('status', 'pending')->count(),
-            'total_employers'        => Employer::count(),
-            'verified_employers'     => Employer::where('status', 'verified')->count(),
-            'pending_employers'      => Employer::where('status', 'pending')->count(),
-            'active_employment'      => EmploymentRecord::whereNull('end_date')->count(),
-            'total_claims'         => Claim::count(),
-        ];
+        $employer = Auth::user()->employer;
 
-        $recentEmployees = Employee::with('user')
-            ->latest()
-            ->limit(5)
-            ->get();
+        if (! $employer) {
+            return redirect()->route('employer.register');
+        }
 
-        $recentEmployers = Employer::with('user')
-            ->latest()
-            ->limit(5)
-            ->get();
+        if ($employer->isPending()) {
+            return redirect()
+                ->route('employer.pending')
+                ->with('info', 'Your account is still under review.');
+        }
 
-        $activityLog = ActivityLog::with('user')
-            ->latest()
-            ->limit(10)
-            ->get();
+        if ($employer->isSuspended()) {
+            return redirect()
+                ->route('employer.pending')
+                ->with('error', 'Your account has been suspended. Contact support.');
+        }
 
-        // Registrations per month (last 6 months) for chart
-        $employeeChart = Employee::select(
-                DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"),
-                DB::raw('COUNT(*) as total')
-            )
-            ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy('month')
-            ->orderBy('created_at')
-            ->pluck('total', 'month');
+        // Normal dashboard render — pass whatever stats you need
+        $activeRecords = $employer->activeEmploymentRecords()->count();
+        $totalEmployees = $employer->currentEmployees()->count();
 
-        return view('employers.dashboard', compact('employer', 'recentRecords', 'stats'));
+        return view('employer.dashboard', compact('employer', 'activeRecords', 'totalEmployees'));
     }
 
     // Show registration form
     public function create()
     {
-        $employer = Auth::user()->employer()->first();
+        $employer = Auth::user()->employer;
 
         if ($employer) {
             return redirect()->route('employer.dashboard')
@@ -111,8 +99,31 @@ class EmployerController extends Controller
         $employer = Employer::create($validated);
 
         return redirect()
-            ->route('dashboard')
-            ->with('success', 'Employer registered successfully. Awaiting verification.');
+            ->route('employer.pending')
+            ->with('success', 'Employer profile submitted for review.');
+    }
+
+    // ── Pending verification page ─────────────────────────────
+    public function pending(): View|RedirectResponse
+    {
+        $user     = Auth::user();
+        $employer = $user->employer;
+
+        // If the user has no employer profile yet, send them to register
+        if (! $employer) {
+            return redirect()
+                ->route('employer.register')
+                ->with('info', 'Please complete your employer registration first.');
+        }
+
+        // If already verified and active, redirect to dashboard
+        if ($employer->isVerified() && $user->is_active) {
+            return redirect()
+                ->route('employer.dashboard')
+                ->with('success', 'Your account is now active!');
+        }
+
+        return view('employer.pending', compact('employer'));
     }
 
     // Report new employee hire
@@ -204,11 +215,5 @@ class EmployerController extends Controller
         );
 
         return back()->with('success', 'Exit record submitted. You may now submit professional feedback.');
-    }
-
-    // Pending verification page
-    public function pending()
-    {
-        return view('employers.pending');
     }
 }

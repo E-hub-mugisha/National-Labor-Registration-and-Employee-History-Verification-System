@@ -30,14 +30,14 @@ class AdminController extends Controller
             'total_employees'     => Employee::count(),
             'verified_employees'  => Employee::where('nida_verified', true)->count(),
             'total_employers'     => Employer::count(),
-            'pending_employers'   => Employer::where('verification_status', 'pending')->count(),
-            'verified_employers'  => Employer::where('verification_status', 'verified')->count(),
+            'pending_employers'   => Employer::where('status', 'pending')->count(),
+            'verified_employers'  => Employer::where('status', 'verified')->count(),
             'total_records'       => EmploymentRecord::count(),
             'total_feedback'      => Claim::count(),
             'pending_moderation'  => Claim::where('moderation_status', 'pending')->count(),
         ];
 
-        $pendingEmployers = Employer::where('verification_status', 'pending')
+        $pendingEmployers = Employer::where('status', 'pending')
             ->with('user')
             ->latest()
             ->take(10)
@@ -123,14 +123,14 @@ class AdminController extends Controller
 
         if ($request->action === 'verify') {
             $employer->update([
-                'verification_status' => 'verified',
+                'status' => 'verified',
                 'verified_at'         => now(),
                 'verified_by'         => Auth::id(),
             ]);
             $status = 'verified';
         } else {
             $employer->update([
-                'verification_status' => 'rejected',
+                'status' => 'rejected',
                 'rejection_reason'    => $request->rejection_reason,
             ]);
             $status = 'rejected';
@@ -187,7 +187,7 @@ class AdminController extends Controller
             $employee->update([
                 'nida_verified'         => true,
                 'nida_verified_at'      => now(),
-                'nida_verification_ref' => 'NIDA-ADMIN-' . strtoupper(substr(md5($employee->national_id), 0, 8)),
+                'nida_ref' => 'NIDA-ADMIN-' . strtoupper(substr(md5($employee->national_id), 0, 8)),
                 'profile_complete'      => true,
                 'is_searchable'         => true,
             ]);
@@ -196,7 +196,7 @@ class AdminController extends Controller
             $employee->update([
                 'nida_verified'         => false,
                 'nida_verified_at'      => null,
-                'nida_verification_ref' => null,
+                'nida_ref' => null,
                 'profile_complete'      => false,
             ]);
             $status = 'unverified';
@@ -267,9 +267,9 @@ class AdminController extends Controller
     // Labor market statistics
     public function statistics()
     {
-        $employmentByStatus = Employee::groupBy('employment_status')
-            ->selectRaw('employment_status, count(*) as count')
-            ->pluck('count', 'employment_status');
+        $employmentByStatus = Employee::groupBy('status')
+            ->selectRaw('status, count(*) as count')
+            ->pluck('count', 'status');
 
         $employmentByDistrict = Employee::groupBy('district')
             ->selectRaw('district, count(*) as count')
@@ -277,12 +277,12 @@ class AdminController extends Controller
             ->take(10)
             ->pluck('count', 'district');
 
-        $topIndustries = Employer::where('verification_status', 'verified')
-            ->groupBy('industry_sector')
-            ->selectRaw('industry_sector, count(*) as count')
+        $topIndustries = Employer::where('status', 'verified')
+            ->groupBy('sector')
+            ->selectRaw('sector, count(*) as count')
             ->orderByDesc('count')
             ->take(10)
-            ->pluck('count', 'industry_sector');
+            ->pluck('count', 'sector');
 
         $exitReasons = EmploymentRecord::whereNotNull('exit_reason')
             ->groupBy('exit_reason')

@@ -52,23 +52,44 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
-        $employer = auth()->user()->employer;
-        $data     = $request->validate($this->rules());
+        $user     = auth()->user();
+        $isAdmin  = in_array($user->role, ['admin', 'government']);
+        $employer = $isAdmin ? null : $user->employer;
 
+        $data = $request->validate($this->rules());
+
+        // ── Photo ──────────────────────────────────────────────────────────────
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('employees/photos', 'public');
         }
 
-        $user = User::create([
-            'name'     => $data['first_name'] . ' ' . $data['last_name'],
+        // ── Resolve employer ───────────────────────────────────────────────────
+        if ($isAdmin) {
+            // Admin/gov: use whatever was selected in the form (may be null)
+            $employerId = $data['current_employer_id'] ?? null;
+        } else {
+            // Employer: always force their own employer id, ignore form value
+            $employerId = $employer->id;
+        }
+
+        // ── Create login account ───────────────────────────────────────────────
+        $loginUser = User::create([
+            'name'     => trim($data['first_name'] . ' ' . $data['last_name']),
             'email'    => $data['email'],
             'password' => Hash::make('passwordEmployee12'),
+            'role'     => 'employee',
         ]);
 
-        $employee = new Employee($data);
-        $employee->user()->associate($user);          // sets user_id on employee
-        $employee->currentEmployer()->associate($employer);
-        $employee->save();
+        // ── Create employee record ─────────────────────────────────────────────
+        $employee = Employee::create([
+            ...$data,
+            'user_id'             => $loginUser->id,
+            'current_employer_id' => $employerId,
+            // If no employer selected, default status to unemployed
+            'status'              => $employerId
+                ? ($data['status'] ?? 'active')
+                : 'unemployed',
+        ]);
 
         return redirect()
             ->route('employees.show', $employee)
