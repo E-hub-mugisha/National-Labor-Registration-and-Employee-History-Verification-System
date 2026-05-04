@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\EmploymentRecord;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class ClaimSeeder extends Seeder
 {
@@ -89,6 +90,7 @@ class ClaimSeeder extends Seeder
 
             $reviewedBy = in_array($status, ['resolved', 'rejected']) ? $reviewer?->id : null;
             $reviewedAt = $reviewedBy ? now()->subDays(rand(1, 30)) : null;
+            $referenceNumber = strtoupper(Str::random(10));
 
             Claim::firstOrCreate(
                 [
@@ -104,6 +106,7 @@ class ClaimSeeder extends Seeder
                     'employer_response' => $this->employerResponses[$status],
                     'reviewed_by'       => $reviewedBy,
                     'reviewed_at'       => $reviewedAt,
+                    'reference_number'  => $referenceNumber,
                 ]
             );
 

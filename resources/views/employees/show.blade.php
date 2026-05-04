@@ -5,7 +5,6 @@
 @section('content')
 
 <style>
-
     /* ── Profile Banner ── */
     .profile-band {
         height: 88px;
@@ -22,7 +21,9 @@
         background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
 
-    .profile-body { padding-top: 0; }
+    .profile-body {
+        padding-top: 0;
+    }
 
     /* ── Profile Avatar ── */
     .profile-avatar-wrap {
@@ -79,7 +80,10 @@
         border: 1px solid var(--slate-200);
     }
 
-    .info-chip i { color: var(--slate-400); font-size: .8rem; }
+    .info-chip i {
+        color: var(--slate-400);
+        font-size: .8rem;
+    }
 
     /* ── Card header icon ── */
     .card-header-icon {
@@ -96,7 +100,10 @@
     }
 
     /* ── Detail grid (key/value pairs) ── */
-    .detail-grid { display: flex; flex-direction: column; }
+    .detail-grid {
+        display: flex;
+        flex-direction: column;
+    }
 
     .detail-row {
         display: flex;
@@ -107,9 +114,14 @@
         font-size: .82rem;
     }
 
-    .detail-row:last-child { border-bottom: none; }
+    .detail-row:last-child {
+        border-bottom: none;
+    }
 
-    .detail-row-full { flex-direction: column; gap: .35rem; }
+    .detail-row-full {
+        flex-direction: column;
+        gap: .35rem;
+    }
 
     .detail-label {
         min-width: 130px;
@@ -122,10 +134,17 @@
         flex-shrink: 0;
     }
 
-    .detail-value { color: var(--slate-700); flex: 1; }
+    .detail-value {
+        color: var(--slate-700);
+        flex: 1;
+    }
 
     /* ── Skills tags ── */
-    .skills-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .skills-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .4rem;
+    }
 
     .skill-tag {
         display: inline-block;
@@ -135,11 +154,13 @@
         border-radius: 20px;
         background: var(--blue-100);
         color: var(--navy-600);
-        border: 1px solid rgba(30,58,110,.1);
+        border: 1px solid rgba(30, 58, 110, .1);
     }
 
     /* ── Employment Timeline ── */
-    .emp-timeline { position: relative; }
+    .emp-timeline {
+        position: relative;
+    }
 
     .emp-timeline-item {
         position: relative;
@@ -147,7 +168,9 @@
         padding-bottom: 1.25rem;
     }
 
-    .emp-timeline-item:last-child { padding-bottom: 0; }
+    .emp-timeline-item:last-child {
+        padding-bottom: 0;
+    }
 
     .emp-timeline-item::before {
         content: '';
@@ -159,7 +182,9 @@
         background: var(--slate-200);
     }
 
-    .emp-timeline-item:last-child::before { display: none; }
+    .emp-timeline-item:last-child::before {
+        display: none;
+    }
 
     .emp-timeline-dot {
         position: absolute;
@@ -237,7 +262,7 @@
             <i class="bi bi-pencil"></i> Edit
         </a>
         <form method="POST" action="{{ route('employees.destroy', $employee) }}"
-              onsubmit="return confirm('Remove {{ addslashes($employee->full_name) }} from the registry?')">
+            onsubmit="return confirm('Remove {{ addslashes($employee->full_name) }} from the registry?')">
             @csrf @method('DELETE')
             <button type="submit" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2">
                 <i class="bi bi-trash3"></i> Delete
@@ -263,13 +288,13 @@
                 {{-- Avatar --}}
                 <div class="profile-avatar-wrap">
                     @if($employee->photo)
-                        <img src="{{ Storage::url($employee->photo) }}"
-                             alt="{{ $employee->full_name }}"
-                             class="profile-avatar-img">
+                    <img src="{{ Storage::url($employee->photo) }}"
+                        alt="{{ $employee->full_name }}"
+                        class="profile-avatar-img">
                     @else
-                        <div class="profile-avatar-placeholder">
-                            {{ strtoupper(substr($employee->first_name,0,1).substr($employee->last_name,0,1)) }}
-                        </div>
+                    <div class="profile-avatar-placeholder">
+                        {{ strtoupper(substr($employee->first_name,0,1).substr($employee->last_name,0,1)) }}
+                    </div>
                     @endif
                 </div>
 
@@ -279,12 +304,12 @@
                         <h2 class="profile-name mb-0">{{ $employee->full_name }}</h2>
 
                         @php
-                            $statusMap = [
-                                'active'      => ['cls' => 'badge-verified', 'icon' => 'check-circle-fill'],
-                                'unemployed'  => ['cls' => 'badge-pending',  'icon' => 'clock-fill'],
-                                'blacklisted' => ['cls' => 'badge-rejected', 'icon' => 'x-circle-fill'],
-                            ];
-                            $s = $statusMap[$employee->status] ?? ['cls' => 'badge-pending', 'icon' => 'dash-circle'];
+                        $statusMap = [
+                        'active' => ['cls' => 'badge-verified', 'icon' => 'check-circle-fill'],
+                        'unemployed' => ['cls' => 'badge-pending', 'icon' => 'clock-fill'],
+                        'blacklisted' => ['cls' => 'badge-rejected', 'icon' => 'x-circle-fill'],
+                        ];
+                        $s = $statusMap[$employee->status] ?? ['cls' => 'badge-pending', 'icon' => 'dash-circle'];
                         @endphp
                         <span class="{{ $s['cls'] }}">
                             <i class="bi bi-{{ $s['icon'] }} me-1"></i>{{ ucfirst($employee->status) }}
@@ -374,11 +399,10 @@
                         <div class="detail-label">Skills</div>
                         <div class="detail-value">
                             <div class="skills-tags">
-                                @foreach(preg_split('/[\n,]+/', $employee->skills) as $skill)
-                                    @php $skill = trim($skill); @endphp
-                                    @if($skill)
-                                        <span class="skill-tag">{{ $skill }}</span>
-                                    @endif
+                                @foreach(is_array($employee->skills) ? $employee->skills : json_decode($employee->skills, true) as $skill)
+                                @if(trim($skill))
+                                <span class="skill-tag">{{ trim($skill) }}</span>
+                                @endif
                                 @endforeach
                             </div>
                         </div>
@@ -396,7 +420,7 @@
                 <span class="card-header-icon"><i class="bi bi-briefcase-fill"></i></span>
                 <span class="card-header-title">Employment History</span>
                 <span class="ms-auto badge rounded-pill"
-                      style="background:var(--blue-100);color:var(--navy-600);font-size:.7rem;font-weight:700;">
+                    style="background:var(--blue-100);color:var(--navy-600);font-size:.7rem;font-weight:700;">
                     {{ $employee->employmentRecords->count() }} {{ Str::plural('record', $employee->employmentRecords->count()) }}
                 </span>
             </div>
@@ -412,9 +436,9 @@
                                     {{ $record->employer->name ?? 'Unknown Employer' }}
                                 </span>
                                 @if(is_null($record->end_date))
-                                    <span class="badge-verified" style="font-size:.65rem;">
-                                        <i class="bi bi-circle-fill me-1" style="font-size:.4rem;vertical-align:middle;"></i>Current
-                                    </span>
+                                <span class="badge-verified" style="font-size:.65rem;">
+                                    <i class="bi bi-circle-fill me-1" style="font-size:.4rem;vertical-align:middle;"></i>Current
+                                </span>
                                 @endif
                             </div>
                             <div class="emp-period">
@@ -423,9 +447,9 @@
                                 &nbsp;→&nbsp;
                                 {{ $record->end_date?->format('M Y') ?? 'Present' }}
                                 @if($record->start_date && $record->end_date)
-                                    <span class="emp-duration">
-                                        · {{ $record->start_date->diffForHumans($record->end_date, true) }}
-                                    </span>
+                                <span class="emp-duration">
+                                    · {{ $record->start_date->diffForHumans($record->end_date, true) }}
+                                </span>
                                 @endif
                             </div>
                         </div>
@@ -443,7 +467,7 @@
                 <span class="card-header-icon"><i class="bi bi-flag-fill"></i></span>
                 <span class="card-header-title">Claims</span>
                 <span class="ms-auto badge rounded-pill"
-                      style="background:#FEF3C7;color:#92400E;font-size:.7rem;font-weight:700;">
+                    style="background:#FEF3C7;color:#92400E;font-size:.7rem;font-weight:700;">
                     {{ $employee->claims->count() }}
                 </span>
             </div>
@@ -469,16 +493,16 @@
                             </td>
                             <td>
                                 @php
-                                    $clsBadge = match($claim->status ?? '') {
-                                        'approved' => 'badge-verified',
-                                        'rejected' => 'badge-rejected',
-                                        default    => 'badge-pending',
-                                    };
-                                    $clsIcon = match($claim->status ?? '') {
-                                        'approved' => 'check-circle-fill',
-                                        'rejected' => 'x-circle-fill',
-                                        default    => 'clock-fill',
-                                    };
+                                $clsBadge = match($claim->status ?? '') {
+                                'approved' => 'badge-verified',
+                                'rejected' => 'badge-rejected',
+                                default => 'badge-pending',
+                                };
+                                $clsIcon = match($claim->status ?? '') {
+                                'approved' => 'check-circle-fill',
+                                'rejected' => 'x-circle-fill',
+                                default => 'clock-fill',
+                                };
                                 @endphp
                                 <span class="{{ $clsBadge }}">
                                     <i class="bi bi-{{ $clsIcon }} me-1"></i>
@@ -508,31 +532,31 @@
             </div>
             <div class="card-body">
                 @if($employee->currentEmployer)
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="employer-icon">
-                            <i class="bi bi-building" style="font-size:1.2rem;color:var(--navy-600);"></i>
-                        </div>
-                        <div>
-                            <div style="font-weight:700;font-size:.88rem;color:var(--slate-800);">
-                                {{ $employee->currentEmployer->name }}
-                            </div>
-                            @isset($employee->currentEmployer->phone)
-                            <div style="font-size:.78rem;color:var(--slate-400);margin-top:.15rem;">
-                                <i class="bi bi-telephone me-1"></i>
-                                {{ $employee->currentEmployer->phone }}
-                            </div>
-                            @endisset
-                        </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="employer-icon">
+                        <i class="bi bi-building" style="font-size:1.2rem;color:var(--navy-600);"></i>
                     </div>
+                    <div>
+                        <div style="font-weight:700;font-size:.88rem;color:var(--slate-800);">
+                            {{ $employee->currentEmployer->name }}
+                        </div>
+                        @isset($employee->currentEmployer->phone)
+                        <div style="font-size:.78rem;color:var(--slate-400);margin-top:.15rem;">
+                            <i class="bi bi-telephone me-1"></i>
+                            {{ $employee->currentEmployer->phone }}
+                        </div>
+                        @endisset
+                    </div>
+                </div>
                 @else
-                    <div class="text-center py-3">
-                        <div style="font-size:1.5rem;color:var(--slate-300);margin-bottom:.4rem;">
-                            <i class="bi bi-building-x"></i>
-                        </div>
-                        <p style="font-size:.8rem;color:var(--slate-400);margin:0;font-style:italic;">
-                            No current employer on record.
-                        </p>
+                <div class="text-center py-3">
+                    <div style="font-size:1.5rem;color:var(--slate-300);margin-bottom:.4rem;">
+                        <i class="bi bi-building-x"></i>
                     </div>
+                    <p style="font-size:.8rem;color:var(--slate-400);margin:0;font-style:italic;">
+                        No current employer on record.
+                    </p>
+                </div>
                 @endif
             </div>
         </div>
@@ -553,11 +577,11 @@
                         {{ $tr->created_at->format('d M Y') }}
                     </span>
                     @php
-                        $trBadge = match($tr->status) {
-                            'approved' => 'badge-verified',
-                            'rejected' => 'badge-rejected',
-                            default    => 'badge-pending',
-                        };
+                    $trBadge = match($tr->status) {
+                    'approved' => 'badge-verified',
+                    'rejected' => 'badge-rejected',
+                    default => 'badge-pending',
+                    };
                     @endphp
                     <span class="{{ $trBadge }}">{{ ucfirst($tr->status) }}</span>
                 </li>
@@ -598,5 +622,3 @@
 </div>
 
 @endsection
-
-

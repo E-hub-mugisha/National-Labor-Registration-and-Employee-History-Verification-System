@@ -28,7 +28,7 @@ return new class extends Migration
             $table->enum('conduct_rating', ['excellent', 'good', 'satisfactory', 'poor', 'very_poor'])->nullable();
             $table->text('conduct_remarks')->nullable();     // Employer's professional conduct remarks
             $table->boolean('eligible_for_rehire')->nullable();
-            $table->enum('status', ['active', 'closed', 'disputed'])->default('active');
+            $table->enum('status', ['active', 'inactive', 'closed', 'disputed'])->default('active');
             $table->foreignId('recorded_by')->constrained('users'); // which employer user recorded this
             $table->timestamps();
             $table->softDeletes();

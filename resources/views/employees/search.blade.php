@@ -6,7 +6,6 @@
 @section('content')
 
 <style>
-
     /* ── Page layout ── */
     .search-page-wrap {
         max-width: 680px;
@@ -23,7 +22,7 @@
         justify-content: center;
         font-size: 1.75rem;
         color: #fff;
-        box-shadow: 0 8px 24px rgba(15,32,64,.3), 0 0 0 6px rgba(15,32,64,.08);
+        box-shadow: 0 8px 24px rgba(15, 32, 64, .3), 0 0 0 6px rgba(15, 32, 64, .08);
     }
 
     /* ── Search form card ── */
@@ -35,7 +34,10 @@
         box-shadow: var(--shadow-md);
     }
 
-    .search-input-group { border-radius: var(--radius-md); overflow: hidden; }
+    .search-input-group {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
 
     .search-input-icon {
         background: var(--slate-100);
@@ -55,9 +57,11 @@
         box-shadow: none !important;
     }
 
-    .search-input:focus { border-color: var(--navy-500); }
+    .search-input:focus {
+        border-color: var(--navy-500);
+    }
 
-    .search-input:focus + .btn-search,
+    .search-input:focus+.btn-search,
     .search-input-group:focus-within .search-input-icon {
         border-color: var(--navy-500);
     }
@@ -165,8 +169,15 @@
     }
 
     @keyframes slideUp {
-        from { opacity: 0; transform: translateY(12px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .result-status-bar {
@@ -213,7 +224,10 @@
         letter-spacing: -.02em;
     }
 
-    .result-identity { flex: 1; min-width: 0; }
+    .result-identity {
+        flex: 1;
+        min-width: 0;
+    }
 
     .result-name {
         font-size: 1.1rem;
@@ -236,7 +250,10 @@
         border: 1px solid var(--slate-200);
     }
 
-    .info-chip i { color: var(--slate-400); font-size: .75rem; }
+    .info-chip i {
+        color: var(--slate-400);
+        font-size: .75rem;
+    }
 
     /* ── Details grid ── */
     .result-details-grid {
@@ -253,8 +270,14 @@
         border-right: 1px solid var(--slate-100);
     }
 
-    .result-detail-item:nth-child(3n) { border-right: none; }
-    .result-detail-full { grid-column: 1 / -1; border-right: none; }
+    .result-detail-item:nth-child(3n) {
+        border-right: none;
+    }
+
+    .result-detail-full {
+        grid-column: 1 / -1;
+        border-right: none;
+    }
 
     .result-detail-label {
         font-size: .65rem;
@@ -286,7 +309,7 @@
         border-radius: 20px;
         background: var(--blue-100);
         color: var(--navy-600);
-        border: 1px solid rgba(30,58,110,.1);
+        border: 1px solid rgba(30, 58, 110, .1);
     }
 
     /* ── Result sections (employment, claims) ── */
@@ -305,7 +328,11 @@
     }
 
     /* ── Employment mini-list ── */
-    .result-emp-list { display: flex; flex-direction: column; gap: .45rem; }
+    .result-emp-list {
+        display: flex;
+        flex-direction: column;
+        gap: .45rem;
+    }
 
     .result-emp-row {
         display: flex;
@@ -322,7 +349,9 @@
         flex-shrink: 0;
     }
 
-    .result-emp-dot--active { background: var(--green-500); }
+    .result-emp-dot--active {
+        background: var(--green-500);
+    }
 
     .result-emp-name {
         font-weight: 600;
@@ -330,7 +359,10 @@
         flex: 1;
     }
 
-    .result-emp-dates { color: var(--slate-400); font-size: .75rem; }
+    .result-emp-dates {
+        color: var(--slate-400);
+        font-size: .75rem;
+    }
 
     .result-emp-more {
         font-size: .73rem;
@@ -358,10 +390,21 @@
 
     /* ── Responsive ── */
     @media (max-width: 575.98px) {
-        .result-details-grid { grid-template-columns: repeat(2, 1fr); }
-        .result-detail-item:nth-child(3n) { border-right: 1px solid var(--slate-100); }
-        .result-detail-item:nth-child(2n) { border-right: none; }
-        .result-profile { flex-direction: column; }
+        .result-details-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .result-detail-item:nth-child(3n) {
+            border-right: 1px solid var(--slate-100);
+        }
+
+        .result-detail-item:nth-child(2n) {
+            border-right: none;
+        }
+
+        .result-profile {
+            flex-direction: column;
+        }
     }
 </style>
 
@@ -385,14 +428,14 @@
                 <i class="bi bi-credit-card-2-front"></i>
             </span>
             <input type="text"
-                   name="national_id"
-                   id="national_id"
-                   value="{{ request('national_id') }}"
-                   autofocus
-                   autocomplete="off"
-                   spellcheck="false"
-                   placeholder="Enter National ID number…"
-                   class="form-control search-input font-mono">
+                name="national_id"
+                id="national_id"
+                value="{{ request('national_id') }}"
+                autofocus
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Enter National ID number…"
+                class="form-control search-input font-mono">
             <button type="submit" class="btn btn-search">
                 <i class="bi bi-search me-2"></i>
                 Search
@@ -458,12 +501,12 @@
     @if($employee)
 
     @php
-        $statusMap = [
-            'active'      => ['cls' => 'badge-verified', 'icon' => 'check-circle-fill', 'bar' => '#00B85A'],
-            'unemployed'  => ['cls' => 'badge-pending',  'icon' => 'clock-fill',         'bar' => '#F59E0B'],
-            'blacklisted' => ['cls' => 'badge-rejected', 'icon' => 'x-circle-fill',      'bar' => '#DC2626'],
-        ];
-        $s = $statusMap[$employee->status] ?? ['cls' => 'badge-pending', 'icon' => 'dash-circle', 'bar' => '#94A3B8'];
+    $statusMap = [
+    'active' => ['cls' => 'badge-verified', 'icon' => 'check-circle-fill', 'bar' => '#00B85A'],
+    'unemployed' => ['cls' => 'badge-pending', 'icon' => 'clock-fill', 'bar' => '#F59E0B'],
+    'blacklisted' => ['cls' => 'badge-rejected', 'icon' => 'x-circle-fill', 'bar' => '#DC2626'],
+    ];
+    $s = $statusMap[$employee->status] ?? ['cls' => 'badge-pending', 'icon' => 'dash-circle', 'bar' => '#94A3B8'];
     @endphp
 
     <div class="result-card">
@@ -477,13 +520,13 @@
             {{-- Avatar --}}
             <div class="result-avatar-wrap">
                 @if($employee->photo)
-                    <img src="{{ Storage::url($employee->photo) }}"
-                         alt="{{ $employee->full_name }}"
-                         class="result-avatar-img">
+                <img src="{{ Storage::url($employee->photo) }}"
+                    alt="{{ $employee->full_name }}"
+                    class="result-avatar-img">
                 @else
-                    <div class="result-avatar-placeholder">
-                        {{ strtoupper(substr($employee->first_name,0,1).substr($employee->last_name,0,1)) }}
-                    </div>
+                <div class="result-avatar-placeholder">
+                    {{ strtoupper(substr($employee->first_name,0,1).substr($employee->last_name,0,1)) }}
+                </div>
                 @endif
             </div>
 
@@ -547,15 +590,14 @@
             @endif
 
             @if($employee->skills)
-            <div class="result-detail-item result-detail-full">
-                <div class="result-detail-label">Skills</div>
-                <div class="result-detail-value">
-                    <div class="d-flex flex-wrap gap-1 mt-1">
-                        @foreach(preg_split('/[\n,]+/', $employee->skills) as $skill)
-                            @php $skill = trim($skill); @endphp
-                            @if($skill)
-                                <span class="skill-tag">{{ $skill }}</span>
-                            @endif
+            <div class="detail-row detail-row-full">
+                <div class="detail-label">Skills</div>
+                <div class="detail-value">
+                    <div class="skills-tags">
+                        @foreach(is_array($employee->skills) ? $employee->skills : json_decode($employee->skills, true) as $skill)
+                        @if(trim($skill))
+                        <span class="skill-tag">{{ trim($skill) }}</span>
+                        @endif
                         @endforeach
                     </div>
                 </div>
@@ -570,7 +612,7 @@
             <div class="result-section-label">
                 <i class="bi bi-briefcase-fill me-1"></i> Employment History
                 <span class="ms-1 badge rounded-pill"
-                      style="background:var(--blue-100);color:var(--navy-600);font-size:.65rem;font-weight:700;vertical-align:middle;">
+                    style="background:var(--blue-100);color:var(--navy-600);font-size:.65rem;font-weight:700;vertical-align:middle;">
                     {{ $employee->employmentRecords->count() }}
                 </span>
             </div>
@@ -583,7 +625,7 @@
                         {{ $record->start_date?->format('M Y') }} – {{ $record->end_date?->format('M Y') ?? 'Present' }}
                     </span>
                     @if(is_null($record->end_date))
-                        <span class="badge-verified" style="font-size:.62rem;margin-left:.25rem;">Current</span>
+                    <span class="badge-verified" style="font-size:.62rem;margin-left:.25rem;">Current</span>
                     @endif
                 </div>
                 @endforeach
@@ -603,18 +645,18 @@
             <div class="result-section-label">
                 <i class="bi bi-flag-fill me-1"></i> Claims
                 <span class="ms-1 badge rounded-pill"
-                      style="background:#FEF3C7;color:#92400E;font-size:.65rem;font-weight:700;vertical-align:middle;">
+                    style="background:#FEF3C7;color:#92400E;font-size:.65rem;font-weight:700;vertical-align:middle;">
                     {{ $employee->claims->count() }}
                 </span>
             </div>
             <div class="d-flex flex-wrap gap-2">
                 @foreach($employee->claims->take(5) as $claim)
                 @php
-                    $cb = match($claim->status ?? '') {
-                        'approved' => 'badge-verified',
-                        'rejected' => 'badge-rejected',
-                        default    => 'badge-pending',
-                    };
+                $cb = match($claim->status ?? '') {
+                'approved' => 'badge-verified',
+                'rejected' => 'badge-rejected',
+                default => 'badge-pending',
+                };
                 @endphp
                 <span class="{{ $cb }}">
                     {{ $claim->reference ?? '#' . $claim->id }}
@@ -633,11 +675,11 @@
             </span>
             <div class="d-flex gap-2">
                 <a href="{{ route('employees.edit', $employee) }}"
-                   class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+                    class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
                     <i class="bi bi-pencil"></i> Edit
                 </a>
                 <a href="{{ route('employees.show', $employee) }}"
-                   class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                    class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
                     View Full Profile <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
@@ -649,5 +691,3 @@
 </div>{{-- /search-page-wrap --}}
 
 @endsection
-
-

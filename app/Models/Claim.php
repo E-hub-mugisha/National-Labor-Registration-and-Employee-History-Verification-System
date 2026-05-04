@@ -20,6 +20,7 @@ class Claim extends Model
         'employer_response',
         'reviewed_by',
         'reviewed_at',
+        'reference_number'
     ];
 
     protected $casts = [
