@@ -115,12 +115,16 @@ class EmployeeDashboardController extends Controller
                 ->store('claims', 'public');
         }
 
+        // reference number generation
+        $referenceNumber = 'CLAIM-' . strtoupper(uniqid());
+
         Claim::create([
             'employee_id'          => $employee->id,
             'employment_record_id' => $data['employment_record_id'],
             'claim_type'           => $data['claim_type'],
             'description'          => $data['description'],
             'evidence_file'        => $filePath,
+            'reference_number'     => $referenceNumber,
             'status'               => 'pending',   // FIXED: was missing, left status null
         ]);
 
