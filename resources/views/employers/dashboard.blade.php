@@ -109,7 +109,7 @@
         </div>
         <div class="emp-actions">
             <a href="{{ route('employees.index') }}" class="btn-outline">View Employees</a>
-            <a href="#" class="btn-primary">Transfer Requests</a>
+            <a href="{{ route('transfers.index') }}" class="btn-primary">Transfer Requests</a>
         </div>
     </div>
 

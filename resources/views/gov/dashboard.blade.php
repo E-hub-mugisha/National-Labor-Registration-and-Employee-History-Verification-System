@@ -99,7 +99,7 @@
             </div>
             <div class="stat-value">{{ number_format($pending_transfers) }}</div>
             @if($pending_transfers > 0)
-                <a href="{{ route('gov.transfers.index') }}" class="text-decoration-none" style="font-size:.75rem;color:#D97706;font-weight:600;">
+                <a href="{{ route('transfers.index') }}" class="text-decoration-none" style="font-size:.75rem;color:#D97706;font-weight:600;">
                     Review now <i class="bi bi-arrow-right"></i>
                 </a>
             @else
@@ -151,7 +151,7 @@
                 </a>
             </div>
             <div class="col-6 col-md-3">
-                <a href="{{ route('gov.transfers.index') }}" class="btn btn-outline-primary w-100 d-flex flex-column align-items-center gap-2 py-3">
+                <a href="{{ route('transfers.index') }}" class="btn btn-outline-primary w-100 d-flex flex-column align-items-center gap-2 py-3">
                     <i class="bi bi-arrow-left-right fs-4"></i>
                     <span>Transfer Requests</span>
                     @if($pending_transfers > 0)

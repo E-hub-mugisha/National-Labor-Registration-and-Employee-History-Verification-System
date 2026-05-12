@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\EmploymentRecord;
 use App\Models\TransferRequest;
+use App\Notifications\TransferDecided;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class TransferController extends Controller
 {
     /**
      * Show all incoming transfer requests for this employer's employees.
      */
+    
     public function index()
     {
         $employer = auth()->user()->employer;
@@ -28,6 +30,16 @@ class TransferController extends Controller
  
         return view('transfers.index', compact('incoming', 'outgoing', 'employer'));
     }
+
+    /**
+     * Show a single transfer request with all details.
+     */
+    public function show(TransferRequest $transferRequest)
+    {
+        $transferRequest->load(['employee', 'requestingEmployer', 'currentEmployer', 'requestedBy', 'respondedBy']);
+
+        return view('transfers.show', compact('transferRequest'));
+    }
  
     /**
      * Approve a transfer request — closes the current employment record and
@@ -35,25 +47,21 @@ class TransferController extends Controller
      */
     public function approve(Request $request, TransferRequest $transferRequest)
     {
-        $employer = auth()->user()->employer;
-        abort_if($transferRequest->current_employer_id !== $employer->id, 403);
-        abort_if($transferRequest->status !== 'pending', 422, 'This request has already been processed.');
- 
         $data = $request->validate([
             'response_note'       => 'nullable|string|max:500',
-            'end_date'            => 'required|date',
+            'end_date'            => 'required|date|after_or_equal:today',
             'conduct_rating'      => 'required|in:excellent,good,satisfactory,poor,very_poor',
             'conduct_remarks'     => 'nullable|string|max:2000',
             'eligible_for_rehire' => 'required|boolean',
             'exit_details'        => 'nullable|string|max:500',
         ]);
  
-        DB::transaction(function () use ($data, $transferRequest, $employer) {
+        DB::transaction(function () use ($data, $transferRequest) {
             $employee = $transferRequest->employee;
  
             // 1. Close current employment record
             $record = EmploymentRecord::where('employee_id', $employee->id)
-                                      ->where('employer_id', $employer->id)
+                                      ->where('employer_id', $transferRequest->current_employer_id)
                                       ->whereNull('end_date')
                                       ->first();
  
@@ -71,18 +79,18 @@ class TransferController extends Controller
  
             // 2. Create new employment record at requesting employer
             EmploymentRecord::create([
-                'employee_id' => $employee->id,
-                'employer_id'  => $transferRequest->requesting_employer_id,
-                'position'    => $transferRequest->requested_position,
-                'start_date'  => now()->toDateString(),
-                'status'      => 'active',
-                'recorded_by' => auth()->id(),
+                'employee_id'     => $employee->id,
+                'employer_id'     => $transferRequest->requesting_employer_id,
+                'position'        => $transferRequest->requested_position,
+                'start_date'      => $data['end_date'],
+                'status'          => 'active',
+                'recorded_by'     => auth()->id(),
             ]);
  
             // 3. Update employee
             $employee->update([
                 'current_employer_id' => $transferRequest->requesting_employer_id,
-                'status'             => 'active',
+                'status'              => 'active',
             ]);
  
             // 4. Update transfer request
@@ -100,7 +108,7 @@ class TransferController extends Controller
         );
  
         return redirect()->route('transfers.index')
-            ->with('success', 'Transfer approved. The employee has been moved to the new employer.');
+            ->with('success', 'Transfer approved successfully. The employee has been transferred to ' . $transferRequest->requestingEmployer->name);
     }
  
     /**
@@ -108,10 +116,6 @@ class TransferController extends Controller
      */
     public function reject(Request $request, TransferRequest $transferRequest)
     {
-        $employer = auth()->user()->employer;
-        abort_if($transferRequest->current_employer_id !== $employer->id, 403);
-        abort_if($transferRequest->status !== 'pending', 422);
- 
         $data = $request->validate([
             'response_note' => 'required|string|max:500',
         ]);
@@ -123,11 +127,32 @@ class TransferController extends Controller
             'responded_at'  => now(),
         ]);
  
+        // Notify requesting employer
         $transferRequest->requestingEmployer->user->notify(
             new TransferDecided($transferRequest, 'rejected')
         );
  
         return redirect()->route('transfers.index')
             ->with('success', 'Transfer request rejected.');
+    }
+
+    /**
+     * Cancel an outgoing transfer request.
+     */
+    public function cancel(Request $request, TransferRequest $transferRequest)
+    {
+        $transferRequest->update([
+            'status'       => 'cancelled',
+            'responded_by' => auth()->id(),
+            'responded_at' => now(),
+        ]);
+
+        // Notify current employer
+        $transferRequest->currentEmployer->user->notify(
+            new TransferDecided($transferRequest, 'cancelled')
+        );
+
+        return redirect()->route('transfers.index')
+            ->with('success', 'Transfer request cancelled successfully.');
     }
 }

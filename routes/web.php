@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmploymentRecordController;
 use App\Http\Controllers\GovernmentController;
+use App\Http\Controllers\TransferController;
 
 // ── Public Routes ────────────────────────────────────────────
 Route::get('/', function () {
@@ -161,4 +162,26 @@ Route::prefix('gov')->name('gov.')->middleware(['auth'])->group(function () {
     // Claims
     Route::get('/claims',                      [GovernmentController::class, 'claims'])->name('claims.index');
     Route::post('/claims/{id}/resolve',        [GovernmentController::class, 'resolveClaim'])->name('claims.resolve');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Transfer requests list (inbox/outbox)
+    Route::get('/transfers', [TransferController::class, 'index'])
+        ->name('transfers.index');
+ 
+    // Show single transfer request details
+    Route::get('/transfers/{transferRequest}', [TransferController::class, 'show'])
+        ->name('transfers.show');
+ 
+    // Approve a transfer request
+    Route::post('/transfers/{transferRequest}/approve', [TransferController::class, 'approve'])
+        ->name('transfers.approve');
+ 
+    // Reject a transfer request
+    Route::post('/transfers/{transferRequest}/reject', [TransferController::class, 'reject'])
+        ->name('transfers.reject');
+ 
+    // Cancel an outgoing transfer request
+    Route::post('/transfers/{transferRequest}/cancel', [TransferController::class, 'cancel'])
+        ->name('transfers.cancel');
 });
